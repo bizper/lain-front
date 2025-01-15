@@ -7,6 +7,8 @@
 :root {
     --background: #ffffff;
     --foreground: #030E13;
+    --toastify-color-success: #121212;
+    --toastify-text-color-success: rgb(9, 255, 222);
     --maincolor: 9, 255, 222;
 }
 

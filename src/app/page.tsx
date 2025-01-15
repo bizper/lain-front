@@ -1,8 +1,8 @@
 'use client'
 
 import React, { ReactNode, useEffect, useRef, useState } from "react";
-import { Library, Song } from "@/type";
-import { get, url } from "@/utils/net";
+import { Album, Library, Resp, Song } from "@/type";
+import { get, post, url } from "@/utils/net";
 import Image from "next/image";
 import { Button, Dialog, DialogPanel, DialogTitle, Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems, Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
 import {
@@ -25,7 +25,10 @@ import {
 } from '@heroicons/react/24/solid'
 import { ProgressBar } from "./component/progressbar";
 import { SongAlbum } from "./component/song";
-import { getRandomInt } from "@/utils/kit";
+import { getRandomInt, getTypedKeys } from "@/utils/kit";
+import { pop } from "./component/popup";
+import { Bounce, toast, ToastContainer } from "react-toastify";
+import { AlbumBox } from "./component/album";
 
 enum PlayMode {
     LOOP,
@@ -41,6 +44,14 @@ const playmode: {
     [PlayMode.SING]: <ArrowPathIcon className="size-6 fill-white/60 text-white" />
 }
 
+const viewmode: {
+    [i: number]: ReactNode
+} = {
+    1: "Song",
+    2: "Album",
+    3: "Artist"
+}
+
 const home = () => {
 
     const [version, setVersion] = useState("")
@@ -54,6 +65,8 @@ const home = () => {
     const [openSetting, setOpenSetting] = useState(false)
     const [currentIndex, setCurrentIndex] = useState(0)
     const [playMode, setPlayMode] = useState<PlayMode>(PlayMode.LOOP)
+    const [openAlbum, setOpenAlbum] = useState(false)
+    const [album, setAlbum] = useState<Album | undefined>()
 
     const player = useRef<HTMLAudioElement>(null)
 
@@ -100,8 +113,8 @@ const home = () => {
         setState(false)
     }
 
-    const formatTime = (seconds: number) => {
-        if (isNaN(seconds)) return '00:00';
+    const formatTime = (seconds?: number) => {
+        if (!seconds || isNaN(seconds)) return '00:00';
         const minutes = Math.floor(seconds / 60);
         const secs = Math.floor(seconds % 60);
         return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
@@ -218,49 +231,67 @@ const home = () => {
                                     <div className="w-full flex flex-row-reverse">
                                         <Menu>
                                             <MenuButton className="rounded-md py-1.5 px-1.5 text-sm/6 font-semibold text-white focus:outline-none data-[hover]:bg-gray-700 data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white">
-                                                View
+                                                {`View by ${viewmode[i.view]}`}
                                             </MenuButton>
-
                                             <MenuItems
                                                 transition
                                                 anchor="bottom end"
                                                 className="w-52 origin-top-right rounded-xl border border-white/5 bg-black p-1 text-sm/6 text-white transition duration-200 ease-out [--anchor-gap:var(--spacing-1)] focus:outline-none data-[closed]:scale-95 data-[closed]:opacity-0"
                                             >
-                                                <MenuItem>
-                                                    <button
-                                                        className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10">
-                                                        By Song
-                                                    </button>
-                                                </MenuItem>
-                                                <MenuItem>
-                                                    <button className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10">
-                                                        By Album
-                                                    </button>
-                                                </MenuItem>
-                                                <MenuItem>
-                                                    <button className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10">
-                                                        By Artist
-                                                    </button>
-                                                </MenuItem>
+                                                {
+                                                    Object.keys(viewmode).map((k) => {
+                                                        let kv = parseInt(k)
+                                                        return (
+                                                            <MenuItem key={k} disabled={i.view == kv}>
+                                                                <button
+                                                                    onClick={_ => {
+                                                                        post<Library>('/lib/update', { id: i.id, view: kv }).then(res => {
+                                                                            const data = res.data
+                                                                            if (data.code == 200) {
+                                                                                setLibraries(libraries.map((lib, inner) => (index == inner ? {
+                                                                                    ...lib,
+                                                                                    songs: data.data.songs,
+                                                                                    albums: data.data.albums,
+                                                                                    view: data.data.view
+                                                                                } : lib)))
+                                                                                toast.success("success!")
+                                                                            } else toast.error(data.msg);
+                                                                        })
+                                                                    }}
+                                                                    className={`group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10 data-[disabled]:cursor-disabled`}>
+                                                                    By {viewmode[kv]}
+                                                                </button>
+                                                            </MenuItem>
+                                                        )
+                                                    })
+                                                }
                                             </MenuItems>
                                         </Menu>
                                     </div>
                                     <div className="songs flex items-center gap-4">
                                         {
-                                            i.songs && i.songs.length > 0 &&
-                                            i.songs.map((s) => (
-                                                <SongAlbum key={s.id} song={s} onClick={_ => {
-                                                    setShow(true)
-                                                    play(s)
-                                                    if (!playlist.includes(s)) {
-                                                        setPlaylist(playlist.concat(s))
-                                                    } else {
-                                                        const npl = playlist.filter(i => i.id != s.id)
-                                                        setPlaylist(npl.concat(s))
-                                                    }
-                                                    setCurrentIndex(playlist.length)
-                                                }} />
-                                            ))
+                                            i.view == 1 ? i.songs && i.songs.length > 0 &&
+                                                i.songs.map((s) => (
+                                                    <SongAlbum key={s.id} song={s} onClick={_ => {
+                                                        setShow(true)
+                                                        play(s)
+                                                        if (!playlist.includes(s)) {
+                                                            setPlaylist(playlist.concat(s))
+                                                        } else {
+                                                            const npl = playlist.filter(i => i.id != s.id)
+                                                            setPlaylist(npl.concat(s))
+                                                        }
+                                                        setCurrentIndex(playlist.length)
+                                                    }} />
+                                                )) : (
+                                                i.view == 2 ? i.albums && i.albums.length > 0 &&
+                                                    i.albums.map((a) => (
+                                                        <AlbumBox key={a.name} album={a} onClick={_ => {
+                                                            setOpenAlbum(true)
+                                                            setAlbum(a)
+                                                        }} />
+                                                    )) : undefined
+                                            )
                                         }
                                     </div>
                                 </div>
@@ -273,7 +304,7 @@ const home = () => {
                 song && <div className={`fixed bottom-0 w-full h-[100px] bg-gray-950 text-white flex items-center justify-center ${showPlayer ? '' : 'hidden'}`}>
                     <div>
                         {
-                            song ? <img className='w-10 h-10 object-fill rounded-[5px]' src={url + "/play/getCover/" + song.id}></img> : <MusicalNoteIcon className="size-10 fill-white/60" />
+                            song ? <img className='w-10 h-10 object-fill rounded-[5px]' src={url + "/play/getCover/" + song.cover}></img> : <MusicalNoteIcon className="size-10 fill-white/60" />
                         }
                     </div>
                     <div className="info h-[100px] w-1/3 p-1 flex flex-col items-center justify-center gap-2">
@@ -331,7 +362,11 @@ const home = () => {
                                                 setPlaylist(npl.concat(i))
                                                 setCurrentIndex(npl.length)
                                             }}>
-                                                <p className={i.id == song.id ? 'font-semibold text-white' : 'font-semibold text-white/50'}>{i.name}</p>
+                                                <div className="flex items-center justify-between">
+                                                    <p className={i.id == song.id ? 'font-semibold text-white' : 'font-semibold text-white/50'}>{i.name}</p>
+                                                    <p className={'font-semibold text-white/50'}>{formatTime(i.duration)}</p>
+                                                </div>
+
                                                 <p className="text-white/50">{`${i.album} - ${i.artist}`}</p>
                                             </a>
                                         ))
@@ -383,6 +418,7 @@ const home = () => {
 
                 </div>
             }
+
             <Dialog open={openSetting} as="div" className="relative z-10 focus:outline-none" onClose={_ => setOpenSetting(false)}>
                 <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
                     <div className="flex min-h-full items-center justify-center p-4">
@@ -409,6 +445,61 @@ const home = () => {
                     </div>
                 </div>
             </Dialog>
+            {
+                <Dialog open={openAlbum} as="div" className="relative z-10 focus:outline-none" onClose={_ => setOpenAlbum(false)}>
+                    <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+                        <div className="flex min-h-full items-center justify-center p-4">
+                            <DialogPanel
+                                transition
+                                className="w-full max-w-md rounded-xl bg-white/5 p-6 backdrop-blur-2xl duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0"
+                            >
+                                <DialogTitle as="h3" className="text-base/7 font-medium text-white mb-2">
+                                    <div className="flex justify-between">
+                                        <div>
+                                            {album?.name}
+                                        </div>
+                                        <div className="text-base/8  text-white/50">
+                                            {`${album?.count} Songs - ${formatTime(album?.duration)}`}
+                                        </div>
+                                    </div>
+                                </DialogTitle>
+                                {
+                                    album?.songs && album.songs.length > 0 &&
+                                    album?.songs.map(s => (
+                                        <a key={s.id} className="block rounded-lg py-2 px-3 transition hover:bg-white/5" href="#" onClick={_ => {
+                                            setShow(true)
+                                            play(s)
+                                            if (!playlist.includes(s)) {
+                                                setPlaylist(playlist.concat(s))
+                                            } else {
+                                                const npl = playlist.filter(i => i.id != s.id)
+                                                setPlaylist(npl.concat(s))
+                                            }
+                                            setCurrentIndex(playlist.length)
+                                        }}>
+                                            <div className="flex items-center justify-between">
+                                                <p className={'font-semibold text-white'}>{s.name}</p>
+                                                <p className={'font-semibold text-white/50'}>{formatTime(s.duration)}</p>
+                                            </div>
+                                            <p className="text-white/50">{`${s.album} - ${s.artist}`}</p>
+                                        </a>
+                                    ))
+                                }
+                            </DialogPanel>
+                        </div>
+                    </div>
+                </Dialog>
+            }
+            <ToastContainer
+                position="top-center"
+                autoClose={1000}
+                hideProgressBar={true}
+                draggable={false}
+                newestOnTop={false}
+                closeOnClick={false}
+                rtl={false}
+                theme="colored"
+                transition={Bounce} />
         </div>
     )
 }
