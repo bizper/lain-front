@@ -8,9 +8,13 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+          nova: ['Nova Square', 'serif']
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        maincolor: "var(--maincolor)"
       },
     },
   },
