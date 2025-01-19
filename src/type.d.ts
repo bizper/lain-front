@@ -32,7 +32,6 @@ export type Song = {
 export type Album = {
     name: string
     artist: string
-    album: string
     genre: string
     year: number
     cover: string
@@ -46,3 +45,34 @@ export interface Resp<T> {
     msg: string
     data: T
 }
+
+export type User = {
+    username: string
+    nickname: string
+    level: number
+    perference: Perference
+    email: string
+    disabled: boolean
+    creation: number
+}
+
+type LoginRes = {
+    user: User
+    token: string
+    expires: number
+}
+
+type BaseAttr = {
+    open: boolean
+    setOpen: (b: boolean) => void
+}
+
+export interface Perference {
+    lang: 'zh' | 'en'
+}
+
+export type LANG = {
+    [key: string]: string
+}
+
+export type ElementType = 'album' | 'song'
