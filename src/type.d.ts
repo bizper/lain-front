@@ -3,10 +3,12 @@ export type Library = {
     name: string
     description: string
     path: string
+    type: number
     belongs: number
     view: number
     songs?: Song[]
     albums?: Album[]
+    count: number
     creation: number
 }
 
@@ -23,6 +25,7 @@ export type Song = {
     path: string
     belongs: string
     type: number
+    track: number
     locked: boolean
     disabled: boolean
     cover: string
@@ -56,15 +59,20 @@ export type User = {
     creation: number
 }
 
-type LoginRes = {
+export type LoginRes = {
     user: User
     token: string
     expires: number
 }
 
-type BaseAttr = {
+export type BaseAttr = {
     open: boolean
     setOpen: (b: boolean) => void
+}
+
+export type Path = {
+    path: string
+    display: string
 }
 
 export interface Perference {
@@ -72,7 +80,7 @@ export interface Perference {
 }
 
 export type LANG = {
-    [key: string]: string
+    [key: string]: string | LANG
 }
 
 export type ElementType = 'album' | 'song'

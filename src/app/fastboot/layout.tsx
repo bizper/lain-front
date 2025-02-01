@@ -1,10 +1,10 @@
 import React from "react";
-import Login from "./page";
+import Fastboot from "./page";
 
 export default function RootLayout() {
   return (
     <div className="w-full">
-      <Login />
+      <Fastboot />
     </div>
   );
 }

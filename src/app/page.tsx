@@ -17,11 +17,13 @@ import {
     MusicalNoteIcon,
     Cog6ToothIcon,
     FaceSmileIcon,
-    QuestionMarkCircleIcon
+    QuestionMarkCircleIcon,
+    ArrowLeftStartOnRectangleIcon,
+    ArrowLeftEndOnRectangleIcon
 } from '@heroicons/react/24/solid'
 import { ProgressBar } from "../components/progressbar";
 import { SongAlbum } from "../components/song";
-import { formatTime, getRandomInt, useLang } from "@/utils/kit";
+import { auth, formatTime, getRandomInt, isAuth, useLang } from "@/utils/kit";
 import { Bounce, toast, ToastContainer } from "react-toastify";
 import { AlbumBox } from "../components/album";
 import { InfoEdit } from "../components/infoedit";
@@ -29,6 +31,8 @@ import { Playlist } from "../components/playlist";
 import { VolumeControl } from "../components/volume";
 import { AlbumList } from "../components/albumlist";
 import { useRouter } from "next/navigation";
+import { Settings } from "@/components/settings";
+import { LibEdit } from "@/components/libedit";
 
 enum PlayMode {
     LOOP,
@@ -47,9 +51,9 @@ const playmode: {
 const viewmode: {
     [i: number]: ReactNode
 } = {
-    1: "Song",
-    2: "Album",
-    3: "Artist"
+    1: useLang("MAIN.LIBRARY.SORT.BYSONG"),
+    2: useLang("MAIN.LIBRARY.SORT.BYALBUM"),
+    3: useLang("MAIN.LIBRARY.SORT.BYARTIST")
 }
 
 type HomeAttr = {
@@ -61,6 +65,7 @@ const Home = (props: HomeAttr) => {
     const [version, setVersion] = useState("")
     const [showPlayer, setShow] = useState(true)
     const [libraries, setLibraries] = useState<Library[]>([])
+    const [lib, setLib] = useState<Library>()
     const [song, setSong] = useState<Song | undefined>()
     const [state, setState] = useState<boolean>(false)
     const [duration, setDuration] = useState(0)
@@ -72,24 +77,32 @@ const Home = (props: HomeAttr) => {
     const [openAlbum, setOpenAlbum] = useState(false)
     const [album, setAlbum] = useState<Album | undefined>()
     const [infoOpen, setInfoOpen] = useState(false)
+    const [libOpen, setLibOpen] = useState(false)
 
     const player = useRef<HTMLAudioElement>(null)
     const router = useRouter();
 
     useEffect(() => {
 
-        if (localStorage.getItem('token')) {
-            get('/auth/').then(res => {
-                const data = res.data
-                if (data.code == 200) {
-                    console.log(data)
-                    setLibraries(data.data.libraries)
-                    setVersion(data.data.version)
+        get('/auth/').then(res => {
+            const data = res.data
+            if (data.code == 200) {
+                if (data.data.fastboot) {
+                    router.push('/fastboot')
+                } else {
+                    if (data.data.libraries) setLibraries(data.data.libraries)
+                    if (data.data.version) setVersion(data.data.version)
                 }
-            })
-        } else {
-            router.push('/login')
-        }
+            }
+        })
+
+        window.addEventListener("keydown", e => {
+            if (e.code === 'Space') {
+                if (state) pause();
+                else resume();
+            }
+        })
+
         return () => {
             setLibraries([])
         }
@@ -164,6 +177,44 @@ const Home = (props: HomeAttr) => {
         setCurrentIndex(rnd)
     }
 
+    const logout = () => {
+        localStorage.clear()
+        router.refresh()
+    }
+
+    const createLib = (name: string, type: number, view: number, path: string, desc?: string) => {
+        setLibOpen(false)
+        post('/lib/create', {
+            name: name,
+            type: type,
+            view: view,
+            path: path,
+            description: desc
+        }).then(res => {
+            const data = res.data
+            if (data.code == 200) {
+                toast.success("success!")
+            }
+        })
+    }
+
+    const updateLib = (id: number, name?: string, type?: number, view?: number, path?: string, desc?: string) => {
+        setLibOpen(false)
+        post('/lib/update', {
+            id: id,
+            name: name,
+            type: type,
+            view: view,
+            path: path,
+            description: desc
+        }).then(res => {
+            const data = res.data
+            if (data.code == 200) {
+                toast.success("success!")
+            }
+        })
+    }
+
     return (
         <div className="main">
             <audio ref={player} onTimeUpdate={_ => {
@@ -184,141 +235,176 @@ const Home = (props: HomeAttr) => {
                 }
             }}></audio>
             <div className="top flex justify-between items-center gap-4 transition-1">
-                    <div className="logo">
-                        <h1>{useLang('TITLE')}</h1>
-                    </div>
+                <div className="logo">
+                    <h1>{useLang('TITLE')}</h1>
                 </div>
-            {/* <Menu>
-                <MenuButton className="rounded-md py-1.5 px-1.5 text-sm/6 font-semibold text-white focus:outline-none data-[hover]:bg-gray-700 data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white">
-                    <Image className="size-4 fill-white/60" src='/Settings.svg' alt="Settings" width={30} height={30} />
-                </MenuButton>
+                <Menu>
+                    <MenuButton className="rounded-md py-1.5 px-1.5 text-sm/6 font-semibold text-white focus:outline-none data-[hover]:bg-gray-700 data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white">
+                        <Image className="size-4 fill-white/60" src='/Settings.svg' alt="Settings" width={30} height={30} />
+                    </MenuButton>
 
-                <MenuItems
-                    transition
-                    anchor="bottom end"
-                    className="w-52 backdrop-blur-2xl origin-top-right rounded-xl border border-white/5 bg-white/5 p-1 text-sm/6 text-white transition duration-200 ease-out [--anchor-gap:var(--spacing-1)] focus:outline-none data-[closed]:scale-95 data-[closed]:opacity-0"
-                >
-                    <MenuItem>
-                        <button
-                            onClick={_ => {
-                                setOpenSetting(true)
-                            }}
-                            className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10">
-                            <Cog6ToothIcon className="size-4 fill-white/60" />
-                            Settings
-                            <kbd className="ml-auto hidden font-sans text-xs text-white/50 group-data-[focus]:inline">S</kbd>
-                        </button>
-                    </MenuItem>
-                    <MenuItem>
-                        <button className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10">
-                            <QuestionMarkCircleIcon className="size-4 fill-white/60" />
-                            Questions
-                            <kbd className="ml-auto hidden font-sans text-xs text-white/50 group-data-[focus]:inline">Q</kbd>
-                        </button>
-                    </MenuItem>
-                    <div className="my-1 h-px bg-white/5" />
-                    <MenuItem>
-                        <button className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10">
-                            <FaceSmileIcon className="size-4 fill-white/60" />
-                            Support
-                            <kbd className="ml-auto hidden font-sans text-xs text-white/50 group-data-[focus]:inline">U</kbd>
-                        </button>
-                    </MenuItem>
-                </MenuItems>
-            </Menu> */}
+                    <MenuItems
+                        transition
+                        anchor="bottom end"
+                        className="w-52 backdrop-blur-2xl origin-top-right rounded-xl border border-white/5 bg-white/5 p-1 text-sm/6 text-white transition duration-200 ease-out [--anchor-gap:var(--spacing-1)] focus:outline-none data-[closed]:scale-95 data-[closed]:opacity-0"
+                    >
+                        <MenuItem>
+                            <button
+                                onClick={_ => {
+                                    auth(() => {
+                                        setOpenSetting(true)
+                                    })
+                                }}
+                                className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10">
+                                <Cog6ToothIcon className="size-4 fill-white/60" />
+                                Settings
+                                <kbd className="ml-auto font-sans text-xs text-white/50 group-data-[focus]:inline">S</kbd>
+                            </button>
+                        </MenuItem>
 
-            <div>
+                        <div className="my-1 h-px bg-white/5" />
+                        <MenuItem>
+                            <button className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10">
+                                <QuestionMarkCircleIcon className="size-4 fill-white/60" />
+                                Questions
+                                <kbd className="ml-auto font-sans text-xs text-white/50 group-data-[focus]:inline">Q</kbd>
+                            </button>
+                        </MenuItem>
+                        <MenuItem>
+                            <button className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10">
+                                <FaceSmileIcon className="size-4 fill-white/60" />
+                                Support
+                                <kbd className="ml-auto font-sans text-xs text-white/50 group-data-[focus]:inline">U</kbd>
+                            </button>
+                        </MenuItem>
+
+                        <div className="my-1 h-px bg-white/5" />
+                        {
+                            isAuth() ? <MenuItem>
+                                <button className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10" onClick={logout}>
+                                    <ArrowLeftStartOnRectangleIcon className="size-4 fill-white/60" />
+                                    Logout
+                                    <kbd className="ml-auto font-sans text-xs text-white/50 group-data-[focus]:inline">L</kbd>
+                                </button>
+                            </MenuItem> : <MenuItem>
+                                <button className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10" onClick={_ => {
+                                    router.push('/login')
+                                }}>
+                                    <ArrowLeftEndOnRectangleIcon className="size-4 fill-white/60" />
+                                    Login
+                                    <kbd className="ml-auto font-sans text-xs text-white/50 group-data-[focus]:inline">L</kbd>
+                                </button>
+                            </MenuItem>
+                        }
+                    </MenuItems>
+                </Menu>
+            </div>
+            <div className=" w-[100vw] h-[100vh]">
                 {
-                    libraries && libraries.length > 0 &&
-                    libraries.map((i, index) => (
-                        <Disclosure key={i.id} as="div" className="p-6" defaultOpen={index == 0}>
-                            <DisclosureButton className="group flex w-full items-center justify-between">
-                                <span className="text-sm/6 font-medium group-data-[hover]:text-white/80">
-                                    {`Library > ${i.name}`}
-                                </span>
-                                <ChevronDownIcon className="size-5 fill-white/60 group-data-[hover]:fill-white/50 group-data-[open]:rotate-180" />
-                            </DisclosureButton>
-                            <DisclosurePanel className="mt-2 text-sm/5">
+                    libraries && libraries.length > 0 ?
+                        libraries.map((i, index) => (
+                            <Disclosure key={i.id} as="div" className="p-6 w-full" defaultOpen={index == 0}>
+                                <DisclosureButton className="group flex w-full items-center justify-between">
+                                    <span className="text-sm/6 font-medium group-data-[hover]:text-white/80">
+                                        {`Library > ${i.name}`}
+                                    </span>
+                                    <ChevronDownIcon className="size-5 fill-white/60 group-data-[hover]:fill-white/50 group-data-[open]:rotate-180" />
+                                </DisclosureButton>
+                                <DisclosurePanel className="mt-2 text-sm/5">
 
-                                <div className="flex flex-col items-center gap-3">
-                                    <div className="w-full flex flex-row-reverse">
-                                        <Menu>
-                                            <MenuButton className="rounded-md py-1.5 px-1.5 text-sm/6 font-semibold text-white focus:outline-none data-[hover]:bg-gray-700 data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white">
-                                                {`View by ${viewmode[i.view]}`}
-                                            </MenuButton>
-                                            <MenuItems
-                                                transition
-                                                anchor="bottom end"
-                                                className="w-52 backdrop-blur-2xl origin-top-right rounded-xl border border-white/5 bg-white/5 p-1 text-sm/6 text-white transition duration-200 ease-out [--anchor-gap:var(--spacing-1)] focus:outline-none data-[closed]:scale-95 data-[closed]:opacity-0"
-                                            >
-                                                {
-                                                    Object.keys(viewmode).map((k) => {
-                                                        const kv = parseInt(k)
-                                                        return (
-                                                            <MenuItem key={k} >
-                                                                <button
-                                                                    disabled={i.view == kv}
-                                                                    onClick={_ => {
-                                                                        post<Library>('/lib/update', { id: i.id, view: kv }).then(res => {
-                                                                            const data = res.data
-                                                                            if (data.code == 200) {
-                                                                                setLibraries(libraries.map((lib, inner) => (index == inner ? {
-                                                                                    ...lib,
-                                                                                    songs: data.data.songs,
-                                                                                    albums: data.data.albums,
-                                                                                    view: data.data.view
-                                                                                } : lib)))
-                                                                                toast.success("success!")
-                                                                            } else toast.error(data.msg);
-                                                                        })
-                                                                    }}
-                                                                    className={`group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10 disabled:cursor-not-allowed disabled:text-gray-600`}>
-                                                                    By {viewmode[kv]}
-                                                                </button>
-                                                            </MenuItem>
-                                                        )
-                                                    })
-                                                }
-                                            </MenuItems>
-                                        </Menu>
-                                    </div>
-                                    <div className="songs flex items-center gap-4 flex-wrap">
-                                        {
-                                            i.view == 1 ? i.songs && i.songs.length > 0 &&
-                                                i.songs.map((s) => (
-                                                    <SongAlbum key={s.id} song={s} onClick={_ => {
-                                                        setShow(true)
-                                                        play(s)
-                                                        if (!playlist.includes(s)) {
-                                                            setPlaylist(playlist.concat(s))
-                                                        } else {
-                                                            const npl = playlist.filter(i => i.id != s.id)
-                                                            setPlaylist(npl.concat(s))
+                                    <div className="flex flex-col items-center gap-3">
+                                        <div className="w-full flex flex-row-reverse">
+                                            {
+                                                isAuth() && <Menu>
+                                                    <MenuButton className="rounded-md py-1.5 px-1.5 text-sm/6 font-semibold text-white focus:outline-none data-[hover]:bg-gray-700 data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white">
+                                                        {`View by ${viewmode[i.view]}`}
+                                                    </MenuButton>
+                                                    <MenuItems
+                                                        transition
+                                                        anchor="bottom end"
+                                                        className="w-52 backdrop-blur-2xl origin-top-right rounded-xl border border-white/5 bg-white/5 p-1 text-sm/6 text-white transition duration-200 ease-out [--anchor-gap:var(--spacing-1)] focus:outline-none data-[closed]:scale-95 data-[closed]:opacity-0"
+                                                    >
+                                                        {
+                                                            Object.keys(viewmode).map((k) => {
+                                                                const kv = parseInt(k)
+                                                                return (
+                                                                    <MenuItem key={k} >
+                                                                        <button
+                                                                            disabled={i.view == kv}
+                                                                            onClick={_ => {
+                                                                                post<Library>('/lib/update', { id: i.id, view: kv }).then(res => {
+                                                                                    const data = res.data
+                                                                                    if (data.code == 200) {
+                                                                                        setLibraries(libraries.map((lib, inner) => (index == inner ? {
+                                                                                            ...lib,
+                                                                                            songs: data.data.songs,
+                                                                                            albums: data.data.albums,
+                                                                                            view: data.data.view
+                                                                                        } : lib)))
+                                                                                        toast.success("success!")
+                                                                                    } else toast.error(data.msg);
+                                                                                })
+                                                                            }}
+                                                                            className={`group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10 disabled:cursor-not-allowed disabled:text-gray-600`}>
+                                                                            By {viewmode[kv]}
+                                                                        </button>
+                                                                    </MenuItem>
+                                                                )
+                                                            })
                                                         }
-                                                        setCurrentIndex(playlist.length)
-                                                    }} />
-                                                )) : (
-                                                i.view == 2 ? i.albums && i.albums.length > 0 &&
-                                                    i.albums.map((a) => (
-                                                        <AlbumBox key={a.name} album={a} onClick={_ => {
-                                                            setOpenAlbum(true)
-                                                            setAlbum(a)
+                                                    </MenuItems>
+                                                </Menu>
+                                            }
+                                        </div>
+                                        <div className="songs flex items-center gap-4 flex-wrap">
+                                            {
+                                                i.view == 1 ? i.songs && i.songs.length > 0 &&
+                                                    i.songs.map((s) => (
+                                                        <SongAlbum key={s.id} song={s} onClick={_ => {
+                                                            setShow(true)
+                                                            play(s)
+                                                            if (!playlist.includes(s)) {
+                                                                setPlaylist(playlist.concat(s))
+                                                            } else {
+                                                                const npl = playlist.filter(i => i.id != s.id)
+                                                                setPlaylist(npl.concat(s))
+                                                            }
+                                                            setCurrentIndex(playlist.length)
                                                         }} />
-                                                    )) : undefined
-                                            )
-                                        }
+                                                    )) : (
+                                                    i.view == 2 ? i.albums && i.albums.length > 0 &&
+                                                        i.albums.map((a) => (
+                                                            <AlbumBox key={a.name} album={a} onClick={_ => {
+                                                                setOpenAlbum(true)
+                                                                setAlbum(a)
+                                                            }} />
+                                                        )) : undefined
+                                                )
+                                            }
+                                        </div>
                                     </div>
-                                </div>
-                            </DisclosurePanel>
-                        </Disclosure>
-                    ))
+                                </DisclosurePanel>
+                            </Disclosure>
+                        )) :
+                        <div className="flex flex-col items-center justify-center">
+                            <span>Seems like you don't have any library yet. Let's create one.</span>
+                            <Button
+                                onClick={_ => {
+                                    auth(() => {
+                                        setLibOpen(true)
+                                    })
+                                }}
+                                className="mt-2 inline-flex items-center gap-2 rounded-md py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[hover]:bg-gray-600 data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white">
+                                {'> Lib'}
+                            </Button>
+                        </div>
                 }
             </div>
             {
                 song && <div className={`fixed bottom-0 w-full h-[100px] bg-gray-950 text-white flex items-center justify-center ${showPlayer ? '' : 'hidden'}`}>
                     <div>
                         {
-                            song ? <img alt='cover' className='w-10 h-10 object-fill rounded-[5px]' src={url + "/play/getCover/" + song.cover}></img> : <MusicalNoteIcon className="size-10 fill-white/60" />
+                            song ? <img alt='cover' className='w-20 h-20 object-fill rounded-[5px]' src={url + "/play/getCover/" + song.cover}></img> : <MusicalNoteIcon className="size-10 fill-white/60" />
                         }
                     </div>
                     <div className="info h-[100px] w-1/3 p-1 flex flex-col items-center justify-center gap-2">
@@ -388,32 +474,8 @@ const Home = (props: HomeAttr) => {
                     setInfoOpen={setInfoOpen} setPlaylist={setPlaylist} playWholeAlbum={playWholeAlbum} />
             }
             <InfoEdit open={infoOpen} setOpen={setInfoOpen} album={album} song={song} />
-            {/* <Dialog open={openSetting} as="div" className="relative z-10 focus:outline-none" onClose={_ => setOpenSetting(false)}>
-                <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
-                    <div className="flex min-h-full items-center justify-center p-4">
-                        <DialogPanel
-                            transition
-                            className="w-full max-w-md rounded-xl bg-white/5 p-6 backdrop-blur-2xl duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0"
-                        >
-                            <DialogTitle as="h3" className="text-base/7 font-bold text-white">
-                                Settings
-                            </DialogTitle>
-                            <p className="mt-2 text-sm/6 text-white/50">
-                                Your payment has been successfully submitted. We’ve sent you an email with all of the details of your
-                                order.
-                            </p>
-                            <div className="mt-4 flex flex-row-reverse">
-                                <Button
-                                    className="inline-flex items-center gap-2 rounded-md bg-gray-700 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-gray-600 data-[focus]:outline-1 data-[focus]:outline-white data-[open]:bg-gray-700"
-                                    onClick={_ => setOpenSetting(false)}
-                                >
-                                    Save
-                                </Button>
-                            </div>
-                        </DialogPanel>
-                    </div>
-                </div>
-            </Dialog> */}
+            <LibEdit open={libOpen} setOpen={setLibOpen} lib={lib} createLib={createLib} setLib={setLib} updateLib={updateLib} />
+            <Settings open={openSetting} setOpen={setOpenSetting} libraries={libraries} setLibOpen={setLibOpen} setLib={setLib} />
             <ToastContainer
                 position="top-center"
                 autoClose={1000}
