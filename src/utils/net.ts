@@ -3,8 +3,8 @@ import axios, { AxiosResponse } from "axios"
 
 const url = 'http://localhost:8080'
 
-const get = (resource: string, data?: any) => {
-    return axios.get(url + resource, {
+const get = <T, R = AxiosResponse<Resp<T>>, D = any>(resource: string, data?: D) => {
+    return axios.get<T, R, D>(url + resource, {
         params: data,
         headers: {
             Authorization: localStorage.getItem('token')

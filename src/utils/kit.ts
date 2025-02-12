@@ -1,5 +1,5 @@
 import { lang } from "@/lang";
-import { LANG } from "@/type";
+import { LANG, Player, Song } from "@/type";
 import { toast } from "react-toastify";
 
 function getRandomInt(min: number, max: number) {
@@ -14,15 +14,15 @@ function getTypedKeys<T>(obj: any): Array<T> {
  * LOGIN.USERNAME -> ['LOGIN', 'USERNAME']
  * @param key query key
  */
-const useLang = (key: string): string => {
-    const keys = key.split('\.')
-    let l: string | LANG = lang
+function locale(key: string): string {
+    const keys = key.split('\.');
+    let l: string | LANG = lang;
     for (const k of keys) {
-        if (typeof l === 'string') return l
-        l = l[k]
+        if (typeof l === 'string') return l;
+        l = l[k];
     }
-    if (typeof l === 'string') return l
-    else return ''
+    if (typeof l === 'string') return l;
+    else return '';
 }
 
 const formatTime = (seconds?: number) => {
@@ -33,7 +33,15 @@ const formatTime = (seconds?: number) => {
 };
 
 const isAuth = (): boolean => {
-    return localStorage.getItem('token') !== null
+    if (typeof window !== 'undefined') {
+        return localStorage.getItem('token') !== null
+    }
+    return false
+}
+
+const isRoot = (): boolean => {
+    if (!isAuth()) return false
+    return true
 }
 
 const auth = (func: () => void) => {
@@ -46,4 +54,15 @@ const auth = (func: () => void) => {
     }
 }
 
-export { getRandomInt, getTypedKeys, useLang, formatTime, isAuth, auth }
+function debounce<T extends (...args: any[]) => void>(
+    func: T,
+    delay: number
+): (...args: Parameters<T>) => void {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    return (...args: Parameters<T>) => {
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(() => func(...args), delay);
+    };
+}
+
+export { getRandomInt, getTypedKeys, locale, formatTime, isAuth, auth, debounce }

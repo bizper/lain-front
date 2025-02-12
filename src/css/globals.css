@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Nova+Square&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Monoton&family=Nova+Square&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -8,8 +9,18 @@
     --background: #ffffff;
     --foreground: #030E13;
     --toastify-color-success: #121212;
-    --toastify-text-color-success: rgb(9, 255, 222);
+    --toastify-text-color-success: #09ffde;
     --maincolor: 9, 255, 222;
+    --maincolorrgb: #09ffde;
+    --contexify-menu-bgColor: rgba(40, 40, 40, .98);
+    --contexify-separator-color: #4c4c4c;
+    --contexify-item-color: #fff;
+    --contexify-activeItem-color: #fff;
+    --contexify-activeItem-bgColor: #3498db;
+    --contexify-rightSlot-color: #6f6e77;
+    --contexify-activeRightSlot-color: #fff;
+    --contexify-arrow-color: #6f6e77;
+    --contexify-activeArrow-color: #fff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -17,6 +28,16 @@
         --background: #030E13;
         --foreground: #ededed;
         --maincolor: 9, 255, 222;
+        --maincolorrgb: #09ffde;
+        --contexify-menu-bgColor: rgba(40, 40, 40, .98);
+        --contexify-separator-color: #4c4c4c;
+        --contexify-item-color: #fff;
+        --contexify-activeItem-color: #fff;
+        --contexify-activeItem-bgColor: #3498db;
+        --contexify-rightSlot-color: #6f6e77;
+        --contexify-activeRightSlot-color: #fff;
+        --contexify-arrow-color: #6f6e77;
+        --contexify-activeArrow-color: #fff;
     }
 }
 
@@ -108,4 +129,3 @@ input[type="range"]::-webkit-slider-thumb:hover {
 .loginbtn {
     color: rgb(var(--maincolor));
 }
-

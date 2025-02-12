@@ -1,13 +1,8 @@
 import { BaseAttr, Library } from "@/type"
-import { post } from "@/utils/net"
-import { Dialog, DialogPanel, DialogTitle, Button, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react"
-import clsx from "clsx"
-import { useEffect, useState } from "react"
-import { toast } from "react-toastify"
-import { formatDistanceToNow } from 'date-fns';
-import { enUS, zhCN } from 'date-fns/locale'; // 支持多语言
-import { PlusCircleIcon } from "@heroicons/react/24/solid"
-import { auth } from "@/utils/kit"
+import { Dialog, DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react"
+import { Transcoding } from "./transcoding"
+import { UserPanel } from "./user"
+import { LibPanel } from "./libpanel"
 
 type SettingAttr = {
     libraries: Library[]
@@ -25,7 +20,7 @@ const categories = [
         key: 1
     },
     {
-        name: 'Other',
+        name: 'Transcoding',
         key: 2
     },
 ]
@@ -58,65 +53,20 @@ const Settings = (props: SettingAttr) => {
                             </TabList>
                             <TabPanels className="mt-3">
                                 <TabPanel key={0} className="rounded-xl bg-white/5 p-3">
-                                    <div className="flex">
-                                        <Button
-                                            onClick={_ => {
-                                                setOpen(false)
-                                                setLibOpen(true)
-                                            }}
-                                            className="inline-flex items-center justify-center gap-2 rounded-md py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[hover]:bg-white/5 data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white">
-                                            <PlusCircleIcon className="size-4 fill-white/60" />{'Lib'}
-                                        </Button>
-                                    </div>
-                                    <div className="my-2 h-px bg-white/5" />
-                                    <ul>
-                                        {
-                                            libraries && libraries.length !== 0 ? libraries.map((lib) => (
-                                                <li key={lib.id} className="relative rounded-md p-3 text-sm/6 transition hover:bg-white/5" onClick={_ => {
-                                                    auth(() => {
-                                                        setLib(lib)
-                                                        setLibOpen(true)
-                                                        setOpen(false)
-                                                    })
-                                                }}>
-                                                    <a href="#" className="font-semibold text-white">
-                                                        <span className="absolute inset-0" />
-                                                        {lib.name}
-                                                    </a>
-                                                    <ul className="flex gap-2 text-white/50" aria-hidden="true">
-                                                        <li>{formatDistanceToNow(new Date(lib.creation), {
-                                                            locale: enUS,
-                                                            addSuffix: true
-                                                        })}
-                                                        </li>
-                                                        <li aria-hidden="true">&middot;</li>
-                                                        <li>{lib.count} songs</li>
-                                                        <li aria-hidden="true">&middot;</li>
-                                                        <li>{lib.path}</li>
-                                                    </ul>
-                                                </li>
-                                            )) : <div className="w-full flex items-center justify-center">
-                                                <span> - - </span>
-                                            </div>
-                                        }
-                                    </ul>
+                                    <LibPanel open={open} setOpen={setOpen} libraries={libraries} setLib={setLib} setLibOpen={setLibOpen}/>
                                 </TabPanel>
                                 <TabPanel key={1} className="rounded-xl bg-white/5 p-3">
-                                    <ul>
-
-                                    </ul>
+                                    <UserPanel />
                                 </TabPanel>
                                 <TabPanel key={2} className="rounded-xl bg-white/5 p-3">
-                                    <ul>
-
-                                    </ul>
+                                    <Transcoding />
                                 </TabPanel>
                             </TabPanels>
                         </TabGroup>
                     </DialogPanel>
                 </div>
             </div>
-        </Dialog>
+        </Dialog >
     )
 }
 

@@ -56,7 +56,7 @@ const AlbumBox = ({ album, width, height, className, onClick }: SongGalleryAttr)
                             setTilt({ tiltX: 0, tiltY: 0 })
                         }}
                         style={
-                            { transform: `rotateX(${tilt.tiltX}deg) rotateY(${tilt.tiltY}deg)` }
+                            { transform: `perspective(500px) rotateX(${tilt.tiltX}deg) rotateY(${tilt.tiltY}deg)` }
                         }
                         className='w-50 h-50 max-w-50 max-h-50 object-fill rounded-[5px] transition-transform duration-300 '
                         src={url + "/play/getCover/" + album.cover}
@@ -81,8 +81,8 @@ const AlbumBox = ({ album, width, height, className, onClick }: SongGalleryAttr)
                 </div>
                 <div className="my-1 h-px bg-white/5" />
                 <div className="title flex flex-col items-center justify-center">
-                    <span>{album.name}</span>
-                    <span>{album.artist}</span>
+                    <span className="text-sm/5 truncate">{album.name}</span>
+                    <span className="text-sm/5">{album.artist}</span>
                 </div>
             </div>
 

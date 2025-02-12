@@ -1,3 +1,5 @@
+import { ReactNode } from "react"
+
 export type Library = {
     id: number
     name: string
@@ -5,10 +7,10 @@ export type Library = {
     path: string
     type: number
     belongs: number
-    view: number
     songs?: Song[]
     albums?: Album[]
     count: number
+    locked: boolean
     creation: number
 }
 
@@ -30,6 +32,10 @@ export type Song = {
     disabled: boolean
     cover: string
     creation: number
+    format: string
+    samples: number
+    bitsPerSample: number
+    lib: string
 }
 
 export type Album = {
@@ -41,6 +47,19 @@ export type Album = {
     songs: Song[]
     count: number
     duration: number
+    lib: string
+}
+
+export type Playlist = {
+    id: number
+    name: string
+    description: string
+    cover: string
+    belongs: number
+    songs: number[]
+    locked: boolean
+    disabled: boolean
+    creation: number
 }
 
 export interface Resp<T> {
@@ -57,6 +76,15 @@ export type User = {
     email: string
     disabled: boolean
     creation: number
+    pref: {
+        volume: number
+    }
+}
+
+export type HomeAuthRes = {
+    user: User
+    version: string
+    fastboot?: boolean
 }
 
 export type LoginRes = {
@@ -83,4 +111,22 @@ export type LANG = {
     [key: string]: string | LANG
 }
 
+export type Page = {
+
+    icon: ReactNode
+    text: string
+    onClick?: () => void
+
+}
+
+export type Player = {
+    prev: () => void
+    next: () => void
+    rndNext: () => void
+    resume: () => void
+    pause: () => void
+    play: (song: Song) => void
+}
+
 export type ElementType = 'album' | 'song'
+

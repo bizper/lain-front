@@ -1,7 +1,7 @@
 'use client'
 
 import { LoginRes } from "@/type"
-import { useLang } from "@/utils/kit"
+import { locale } from "@/utils/kit"
 import { post } from "@/utils/net"
 import { Fieldset, Legend, Field, Label, Input, Button } from "@headlessui/react"
 import clsx from "clsx"
@@ -44,11 +44,11 @@ const Fastboot = () => {
                             style={{
                                 display: 'inline',
                                 textShadow: '2px 4px 4px rgba(var(--maincolor), 0.65)'
-                            }}>{useLang('TITLE')}</h1>
+                            }}>{locale('TITLE')}</h1>
                     </Legend>
                     <Field>
                         <Label className="text-sm/6 font-medium text-white">
-                            {useLang('LOGIN.USERNAME.ROOT')}
+                            {locale('LOGIN.USERNAME.ROOT')}
                         </Label>
                         <Input
                             disabled
@@ -64,7 +64,7 @@ const Fastboot = () => {
                         />
                     </Field>
                     <Field>
-                        <Label className="text-sm/6 font-medium text-white">{useLang('LOGIN.PASSWORD.ROOT')}</Label>
+                        <Label className="text-sm/6 font-medium text-white">{locale('LOGIN.PASSWORD.ROOT')}</Label>
                         <Input
                             type="password"
                             value={password}
@@ -79,7 +79,7 @@ const Fastboot = () => {
                         />
                     </Field>
                     <Field>
-                        <Label className="text-sm/6 font-medium text-white">{useLang('LOGIN.PASSWORD.REPEAT')}</Label>
+                        <Label className="text-sm/6 font-medium text-white">{locale('LOGIN.PASSWORD.REPEAT')}</Label>
                         <Input
                             type="password"
                             value={repeat}

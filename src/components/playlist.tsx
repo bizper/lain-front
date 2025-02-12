@@ -1,13 +1,14 @@
 import { Song } from "@/type"
 import { formatTime } from "@/utils/kit"
-import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react"
+import { post } from "@/utils/net"
+import { Button, Popover, PopoverButton, PopoverPanel } from "@headlessui/react"
 import { Bars4Icon } from "@heroicons/react/24/solid"
 
 type PlaylistAttr = {
     playlist: Song[]
     song: Song
-    setPlaylist: (songs: Song[]) => void
     play: (song: Song) => void
+    setPlaylist: (songs: Song[]) => void
     setCurrentIndex: (i: number) => void
 }
 
@@ -47,6 +48,15 @@ const Playlist = (props: PlaylistAttr) => {
                             </a>
                         ))
                     }
+                    <div className="p-2">
+                        <Button className="rounded-lg px-1 py-1 hover:bg-white/5" onClick={_ => {
+                            post('/list/create', {
+                                name: 'Playlist 1',
+                                description: 'for test',
+                                songs: playlist.map(i => i.id)
+                            })
+                        }}>Save As</Button>
+                    </div>
                 </div>
             </PopoverPanel>
         </Popover>

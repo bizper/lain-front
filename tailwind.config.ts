@@ -9,12 +9,13 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-          nova: ['Nova Square', 'serif']
+          nova: ['Nova Square', 'serif'],
+          Monoton: ['Monoton', 'serif']
       },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
-        maincolor: "var(--maincolor)"
+        maincolor: "var(--maincolorrgb)"
       },
     },
   },
