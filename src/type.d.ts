@@ -1,5 +1,3 @@
-import { ReactNode } from "react"
-
 export type Library = {
     id: number
     name: string
@@ -54,6 +52,7 @@ export type Playlist = {
     id: number
     name: string
     description: string
+    type: number
     cover: string
     belongs: number
     songs: number[]
@@ -128,5 +127,9 @@ export type Player = {
     play: (song: Song) => void
 }
 
-export type ElementType = 'album' | 'song'
+export type Core = {
+    
+}
+
+export type VoidHandler = () => void
 

@@ -1,12 +1,13 @@
 import { Album, Song } from "@/type"
 import { Dialog, DialogPanel, DialogTitle, Button, Description, Field, Input, Label } from "@headlessui/react"
 import clsx from 'clsx'
+import { Dispatch, SetStateAction } from "react"
 
 type InfoEditAttr = {
     album?: Album
     song?: Song
     open: boolean
-    setOpen: (open: boolean) => void
+    setOpen: Dispatch<SetStateAction<boolean>>
 }
 
 const InfoEdit = (props: InfoEditAttr) => {

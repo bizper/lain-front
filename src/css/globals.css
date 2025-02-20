@@ -129,3 +129,13 @@ input[type="range"]::-webkit-slider-thumb:hover {
 .loginbtn {
     color: rgb(var(--maincolor));
 }
+
+.tilted-card-demo-text {
+    text-transform: capitalize;
+    color: rgb(255, 255, 255);
+    letter-spacing: -0.5px;
+    font-family: "DM Sans";
+    font-weight: 900;
+    box-shadow: rgba(6, 6, 6, 0.4) 0px 5px 30px;
+    padding: 0.5rem 1em;
+}

@@ -1,28 +1,41 @@
 import { BaseAttr, Library } from "@/type"
 import { auth } from "@/utils/kit"
-import { post } from "@/utils/net"
+import { get, post } from "@/utils/net"
 import { Button } from "@headlessui/react"
 import { PlusCircleIcon, MagnifyingGlassCircleIcon, TrashIcon } from "@heroicons/react/24/solid"
 import clsx from "clsx"
 import { formatDistanceToNow } from "date-fns"
 import { enUS } from "date-fns/locale"
-import { useRef, useState } from "react"
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react"
 import { toast } from "react-toastify"
 import gsap from "gsap"
 
 type LibPanelAttr = {
-    libraries: Library[]
-    setLibOpen: (b: boolean) => void
-    setLib: (lib: Library) => void
+    setLibOpen: Dispatch<SetStateAction<boolean>>
+    setLib: Dispatch<SetStateAction<Library | undefined>>
 } & BaseAttr
 
 const LibPanel = (props: LibPanelAttr) => {
 
+    const [libraries, setLibraries] = useState<Library[]>()
     const [click, setClick] = useState(false)
     const [timeline, setTimeline] = useState<GSAPTimeline>()
     const tweenRef = useRef<SVGSVGElement>(null);
 
-    const { open, libraries, setOpen, setLibOpen, setLib } = props
+    const { setOpen, setLibOpen, setLib } = props
+
+    useEffect(() => {
+        get<Library[]>('/lib/index').then(res => {
+            if (res.status === 200) {
+                const data = res.data
+                if (data.code == 200) {
+                    setLibraries(data.data)
+                }
+            } else {
+                toast.error('Unable to connect to wired.')
+            }
+        })
+    }, [])
 
     const handleMouseDown = () => {
         if (tweenRef && tweenRef.current) {

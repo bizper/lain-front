@@ -3,11 +3,11 @@ import { Dialog, DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, Tab
 import { Transcoding } from "./transcoding"
 import { UserPanel } from "./user"
 import { LibPanel } from "./libpanel"
+import { Dispatch, SetStateAction } from "react"
 
 type SettingAttr = {
-    libraries: Library[]
-    setLibOpen: (b: boolean) => void
-    setLib: (lib: Library) => void
+    setLibOpen: Dispatch<SetStateAction<boolean>>
+    setLib: Dispatch<SetStateAction<Library | undefined>>
 } & BaseAttr
 
 const categories = [
@@ -27,7 +27,7 @@ const categories = [
 
 const Settings = (props: SettingAttr) => {
 
-    const { open, setOpen, libraries, setLibOpen, setLib } = props
+    const { open, setOpen, setLibOpen, setLib } = props
 
     return (
         <Dialog open={open} as="div" className="relative z-10 focus:outline-none" onClose={_ => setOpen(false)}>
@@ -53,7 +53,7 @@ const Settings = (props: SettingAttr) => {
                             </TabList>
                             <TabPanels className="mt-3">
                                 <TabPanel key={0} className="rounded-xl bg-white/5 p-3">
-                                    <LibPanel open={open} setOpen={setOpen} libraries={libraries} setLib={setLib} setLibOpen={setLibOpen}/>
+                                    <LibPanel open={open} setOpen={setOpen} setLib={setLib} setLibOpen={setLibOpen}/>
                                 </TabPanel>
                                 <TabPanel key={1} className="rounded-xl bg-white/5 p-3">
                                     <UserPanel />

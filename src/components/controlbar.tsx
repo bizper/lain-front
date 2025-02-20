@@ -5,7 +5,7 @@ import { Playlist } from "./playlist"
 import { ProgressBar } from "./progressbar"
 import { VolumeControl } from "./volume"
 import { Player, Song } from "@/type"
-import { ReactNode } from "react"
+import { Dispatch, ReactNode, SetStateAction } from "react"
 import { url } from "@/utils/net"
 
 enum PlayMode {
@@ -29,11 +29,11 @@ type ControlBarAttr = {
     volume: number
     duration: number
     audioRef: React.RefObject<HTMLAudioElement | null>
-    setShow: (b: boolean) => void
-    setPlayMode: (mode: PlayMode) => void
-    setVolume: (n: number) => void
-    setCurrentIndex: (i: number) => void
-    setPlaylist: (song: Song[]) => void
+    setShow: Dispatch<SetStateAction<boolean>>
+    setPlayMode: Dispatch<SetStateAction<PlayMode>>
+    setVolume: (v: number) => void
+    setCurrentIndex: Dispatch<SetStateAction<number>>
+    setPlaylist: Dispatch<SetStateAction<Song[]>>
     playlist: Song[]
     showPlayer: boolean
     player: Player
@@ -84,8 +84,8 @@ const ControlBar = (props: ControlBarAttr) => {
                     <Button className='group'>
                         {
                             state ?
-                                <PauseIcon className="size-6 fill-white/60 group-hover:fill-white" onClick={player.pause} /> :
-                                <PlayIcon className="size-6 fill-white/60 group-hover:fill-white" onClick={player.resume} />
+                                <PauseIcon className="size-6 fill-white/60 group-hover:fill-white transition-all duration-300" onClick={player.pause} /> :
+                                <PlayIcon className="size-6 fill-white/60 group-hover:fill-white transition-all duration-300" onClick={player.resume} />
                         }
                     </Button>
                     <Button onClick={player.next} className='group'>
@@ -111,7 +111,7 @@ const ControlBar = (props: ControlBarAttr) => {
 
             </div>
             <div className="additioninfo w-1/6 flex items-center justify-center gap-4">
-                <Playlist song={song} playlist={playlist} setPlaylist={setPlaylist} setCurrentIndex={setCurrentIndex} play={player.play} />
+                <Playlist song={song} playlist={playlist} setPlaylist={setPlaylist} setCurrentIndex={setCurrentIndex} player={player} />
                 <VolumeControl volume={volume} setVolume={setVolume} />
 
             </div>

@@ -1,9 +1,11 @@
-import { Album, BaseAttr, Library, Player, Song } from "@/type"
-import { formatTime, isAuth } from "@/utils/kit"
-import { Dialog, DialogPanel, DialogTitle, Button } from "@headlessui/react"
-import { PlayIcon, InformationCircleIcon, PauseIcon } from "@heroicons/react/24/solid"
+import { Album, BaseAttr, Library, Player, Playlist, Song } from "@/type"
+import { auth, formatTime, isAuth } from "@/utils/kit"
+import { Dialog, DialogPanel, DialogTitle, Button, MenuButton, MenuItem, MenuItems, Menu } from "@headlessui/react"
+import { PlayIcon, InformationCircleIcon, PauseIcon, PlusIcon, ArrowLeftEndOnRectangleIcon, ArrowLeftStartOnRectangleIcon, Cog6ToothIcon, FaceSmileIcon, QuestionMarkCircleIcon, QueueListIcon } from "@heroicons/react/24/solid"
+import router from "next/router";
+import { Dispatch, SetStateAction, useState } from "react";
 import {
-    Menu,
+    Menu as ContextMenu,
     Item,
     Separator,
     Submenu,
@@ -11,17 +13,20 @@ import {
 } from "react-contexify";
 import "react-contexify/dist/ReactContexify.css";
 import { createPortal } from "react-dom";
+import { Empty } from "./empty";
+import { get, post } from "@/utils/net";
+import { toast } from "react-toastify";
 
 type AlbumListAttr = BaseAttr & {
     album: Album
     playlist: Song[]
     song?: Song
     state: boolean
-    setAlbum: (album: Album) => void
-    setCurrentIndex: (index: number) => void
-    setShow: (b: boolean) => void
-    setInfoOpen: (b: boolean) => void;
-    setPlaylist: (songs: Song[]) => void
+    setAlbum: Dispatch<SetStateAction<Album | undefined>>
+    setCurrentIndex: Dispatch<SetStateAction<number>>
+    setShow: Dispatch<SetStateAction<boolean>>
+    setInfoOpen: Dispatch<SetStateAction<boolean>>
+    setPlaylist: Dispatch<SetStateAction<Song[]>>
     playWholeAlbum: () => void
     player: Player
 }
@@ -39,16 +44,36 @@ const AlbumList = (props: AlbumListAttr) => {
         setOpen,
         setAlbum,
         setInfoOpen,
-        playWholeAlbum    } = props
+        playWholeAlbum } = props
 
     const { show } = useContextMenu({
         id: MENU_ID
     });
 
+    const [lists, setLists] = useState<Playlist[]>()
+
+    const queryPlaylist = () => {
+        get<Playlist[]>('/list/index').then(res => {
+            const data = res.data
+            if (data.code === 200) {
+                setLists(data.data)
+            }
+        })
+    }
+
+    const addAlbumToPlaylist = (id: number) => {
+        post('/list/update', {id: id, songs: album.songs.map(i => i.id)}).then(res => {
+            const data = res.data
+            if(data.code === 200) {
+                toast.success('success')
+            }
+        })
+    }
+
     return (
         <div>
-            <Dialog open={open} as="div" className="relative z-10 focus:outline-none" onClose={_ => setOpen(false)}>
-                <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+            <Dialog open={open} as="div" className="relative  focus:outline-none" onClose={_ => setOpen(false)}>
+                <div className="fixed inset-0  w-screen overflow-y-auto">
                     <div className="flex min-h-full items-center justify-center p-4">
                         <DialogPanel
                             transition
@@ -70,9 +95,37 @@ const AlbumList = (props: AlbumListAttr) => {
                                 </div>
 
                                 <div className="flex items-center justify-between my-2 h-auto">
-                                    <Button onClick={playWholeAlbum} className='group'>
-                                        <PlayIcon className="size-10 fill-white/60 transition duration-300 group-hover:fill-white" />
-                                    </Button>
+                                    <div>
+
+                                        <Button onClick={playWholeAlbum} className='group'>
+                                            <PlayIcon className="size-10 fill-white/60 transition duration-300 group-hover:fill-white" />
+                                        </Button>
+                                        {
+                                            isAuth() && <Menu>
+                                                <MenuButton onClick={queryPlaylist} className="group rounded-md py-1.5 px-1.5 text-sm/6 font-semibold text-white data-[focus]:outline-1 data-[focus]:outline-white">
+                                                    <PlusIcon className="size-10 fill-white/60 transition duration-300 group-hover:fill-white" />
+                                                </MenuButton>
+                                                <MenuItems
+                                                    transition
+                                                    anchor="bottom end"
+                                                    className="z-11 w-52 backdrop-blur-2xl origin-top-right rounded-xl border border-white/5 bg-white/5 p-1 text-sm/6 text-white transition duration-200 ease-out [--anchor-gap:var(--spacing-1)] focus:outline-none data-[closed]:scale-95 data-[closed]:opacity-0"
+                                                >
+                                                    {
+                                                        lists && lists.length > 0 ?
+                                                        lists.map(i => (
+                                                            <MenuItem key={i.id}>
+                                                                <button className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10" onClick={_ => addAlbumToPlaylist(i.id)}>
+                                                                    <QueueListIcon className="size-4 fill-white/60" />
+                                                                    {`Add to ${i.name}`}
+                                                                </button>
+                                                            </MenuItem>
+                                                        )) : <Empty text="No Playlist" />
+                                                    }
+
+                                                </MenuItems>
+                                            </Menu>
+                                        }
+                                    </div>
                                     {
                                         isAuth() && <Button onClick={_ => {
                                             setOpen(false)
@@ -119,7 +172,7 @@ const AlbumList = (props: AlbumListAttr) => {
                 </div>
             </Dialog>
             {
-                createPortal(<Menu id={MENU_ID} theme='dark'>
+                createPortal(<ContextMenu id={MENU_ID} theme='dark'>
                     <Item >
                         Item 1
                     </Item>
@@ -135,7 +188,7 @@ const AlbumList = (props: AlbumListAttr) => {
                         </Item>
                         <Item >Sub Item 2</Item>
                     </Submenu>
-                </Menu>, document.body)
+                </ContextMenu>, document.body)
             }
         </div>
     )

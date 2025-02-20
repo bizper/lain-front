@@ -3,12 +3,12 @@ import { get, post } from "@/utils/net"
 import { Dialog, DialogPanel, DialogTitle, Button, Field, Input, Label, Textarea, Select, Description, Fieldset, Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions, DialogBackdrop, Listbox, ListboxButton, ListboxOption, ListboxOptions, Switch } from "@headlessui/react"
 import { CheckIcon, ChevronDownIcon } from "@heroicons/react/24/solid"
 import clsx from 'clsx'
-import { useEffect, useRef, useState } from "react"
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react"
 import { toast } from "react-toastify"
 
 type LibEditAttr = {
     lib?: Library
-    setLib: (lib?: Library) => void
+    setLib: Dispatch<SetStateAction<Library | undefined>>
     saveLib: (lib: Partial<Library>) => void
 } & BaseAttr
 

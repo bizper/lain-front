@@ -25,8 +25,8 @@ const PlayPanel = (
     }
 
     return (
-        <div className="flex flex-col items-center justify-center gap-4">
-            <div className="w-80 overflow-hidden flex flex-col items-center justify-center gap-4">
+        <div className="flex flex-col items-center justify-center gap-4 w-full">
+            <div className="w-[80%] overflow-hidden flex flex-col items-center justify-center gap-4">
                 <span className={state ? "text-xl inline-block whitespace-nowrap animate-marquee" : "text-xl inline-block whitespace-nowrap"}>
                     {`${song ? song.name : 'No Song Yet'}`}
                 </span>
@@ -49,8 +49,8 @@ const PlayPanel = (
                 <Button className='group'>
                     {
                         state ?
-                            <PauseIcon className="size-6 fill-white/60 group-hover:fill-white" onClick={player.pause} /> :
-                            <PlayIcon className="size-6 fill-white/60 group-hover:fill-white" onClick={_ => {
+                            <PauseIcon className="size-6 fill-white/60 group-hover:fill-white transition-all duration-300" onClick={player.pause} /> :
+                            <PlayIcon className="size-6 fill-white/60 group-hover:fill-white transition-all duration-300" onClick={_ => {
                                 if (song) player.resume()
                                 else toast.error('no song')
                             }} />

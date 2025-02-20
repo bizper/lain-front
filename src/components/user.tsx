@@ -1,6 +1,6 @@
 import { User } from "@/type"
 import { auth } from "@/utils/kit"
-import { post } from "@/utils/net"
+import { get } from "@/utils/net"
 import { Button } from "@headlessui/react"
 import { PlusCircleIcon, CogIcon } from "@heroicons/react/24/solid"
 import clsx from "clsx"
@@ -13,7 +13,7 @@ const UserPanel = () => {
     const [user, setUser] = useState<User>()
 
     useEffect(() => {
-        post<User>('/user/me').then(res => {
+        get<User>('/user/me').then(res => {
             const data = res.data
             if(data.code === 200) {
                 setUser(data.data)

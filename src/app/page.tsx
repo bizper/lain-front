@@ -1,10 +1,10 @@
 'use client'
 
 import React, { useEffect, useRef, useState } from "react";
-import { Album, Library, Song, Page, Player, Playlist } from "@/type";
-import { get, post, url } from "@/utils/net";
+import { Album, Library, Song, Page, Player } from "@/type";
+import { post, url } from "@/utils/net";
 import Image from "next/image";
-import { Button, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import {
     Cog6ToothIcon,
     FaceSmileIcon,
@@ -12,13 +12,11 @@ import {
     ArrowLeftStartOnRectangleIcon,
     ArrowLeftEndOnRectangleIcon,
     HomeIcon,
-    ListBulletIcon,
     BookOpenIcon,
     XCircleIcon,
     Bars3Icon,
     MusicalNoteIcon,
-    InformationCircleIcon,
-    PlayIcon
+    QueueListIcon
 } from '@heroicons/react/24/solid'
 import { auth, debounce, getRandomInt, isAuth, locale } from "@/utils/kit";
 import { Bounce, toast, ToastContainer } from "react-toastify";
@@ -28,13 +26,12 @@ import { useRouter } from "next/navigation";
 import { Settings } from "@/components/settings";
 import { LibEdit } from "@/components/libedit";
 import { ControlBar } from "@/components/controlbar";
-import { AlbumBox } from "@/components/album";
 import { motion } from "framer-motion";
 import clsx from "clsx";
-import { formatDistanceToNow } from "date-fns";
-import { enUS } from "date-fns/locale";
-import { Pagination } from "@/components/pagination";
-import { HomePage } from "@/components/homepage";
+import { HomePage } from "@/pages/homepage";
+import { PlaylistPage } from "@/pages/playlistpage";
+import { AlbumPage } from "@/pages/albumpage";
+import { SongPage } from "@/pages/songpage";
 
 enum PlayMode {
     LOOP,
@@ -46,9 +43,7 @@ const debouncedPost = debounce(post, 300)
 
 const Home = () => {
 
-
     const [showPlayer, setShow] = useState(true)
-    const [libraries, setLibraries] = useState<Library[]>([])
     const [lib, setLib] = useState<Library>()
     const [song, setSong] = useState<Song | undefined>()
     const [state, setState] = useState<boolean>(false)
@@ -59,17 +54,12 @@ const Home = () => {
     const [currentIndex, setCurrentIndex] = useState(0)
     const [playMode, setPlayMode] = useState<PlayMode>(PlayMode.LOOP)
     const [openAlbum, setOpenAlbum] = useState(false)
-    const [album, setAlbum] = useState<Album | undefined>()
+    const [album, setAlbum] = useState<Album>()
     const [openInfo, setOpenInfo] = useState(false)
     const [libOpen, setLibOpen] = useState(false)
     const [openSidebar, setOpenSidebar] = useState(false);
     const [index, setIndex] = useState(0)
-    const [page, setPage] = useState<number>(1)
-    const [list, setList] = useState<Playlist>()
-    const [lists, setLists] = useState<Playlist[]>([])
-    const [songs, setSongs] = useState<Song[]>([])
-    const [songPage, setSongPage] = useState(1)
-
+    
     const audioRef = useRef<HTMLAudioElement>(null)
     const router = useRouter();
 
@@ -87,7 +77,7 @@ const Home = () => {
                 }
                 setCurrentIndex(playlist.length)
                 setState(true)
-                if (page !== 1) setShow(true)
+                if (index !== 0) setShow(true)
             } else {
                 toast.error('Unable to find player.')
             }
@@ -142,22 +132,13 @@ const Home = () => {
         }
     }
 
-    const playWholeList = () => {
-        if (list && songs) {
-            setShow(true)
-            player.play(songs[0])
-            setPlaylist(songs)
-            setCurrentIndex(0)
-        }
-    }
-
     const pages: Page[] =
         [
             {
                 icon: <HomeIcon className="size-4" />,
                 text: 'Home',
                 onClick: () => {
-                    if (state && showPlayer) {
+                    if (showPlayer) {
                         setShow(false)
                     }
                 }
@@ -166,50 +147,27 @@ const Home = () => {
                 icon: <BookOpenIcon className="size-4" />,
                 text: 'Albums',
                 onClick: () => {
-                    get<Library[]>('/auth/indexOpenLib', { view: 2 }).then(res => {
-                        if (res.status === 200) {
-                            const data = res.data
-                            if (data.code == 200) {
-                                setLibraries(data.data)
-                            }
-                        } else {
-                            toast.error('Unable to connect to wired.')
-                        }
-                    })
-                    if (state && !showPlayer) setShow(true)
+                    if(state && !showPlayer) {
+                        setShow(true)
+                    }
                 }
             },
             {
                 icon: <MusicalNoteIcon className="size-4" />,
                 text: 'Songs',
                 onClick: () => {
-                    get<Library[]>('/auth/indexOpenLib', { view: 1 }).then(res => {
-                        if (res.status === 200) {
-                            const data = res.data
-                            if (data.code == 200) {
-                                setLibraries(data.data)
-                            }
-                        } else {
-                            toast.error('Unable to connect to wired.')
-                        }
-                    })
-                    if (state && !showPlayer) setShow(true)
+                    if(state && !showPlayer) {
+                        setShow(true)
+                    }
                 }
             },
             {
-                icon: <ListBulletIcon className="size-4" />,
+                icon: <QueueListIcon className="size-4" />,
                 text: 'Playlist',
                 onClick: () => {
-                    get<Playlist[]>('/list/index').then(res => {
-                        if (res.status === 200) {
-                            const data = res.data
-                            if (data.code == 200) {
-                                setLists(data.data)
-                            }
-                        } else {
-                            toast.error('Unable to connect to wired.')
-                        }
-                    })
+                    if(state && !showPlayer) {
+                        setShow(true)
+                    }
                 }
             },
         ]
@@ -245,8 +203,6 @@ const Home = () => {
             }
         })
     }
-
-
 
     return (
         <div className="main h-full">
@@ -334,11 +290,11 @@ const Home = () => {
                     </MenuItems>
                 </Menu>
             </div>
-            <div className="ml-5 flex h-full">
+            <div className="ml-5 flex h-screen">
                 {/* Sidebar */}
                 <motion.div
                     animate={{ width: openSidebar ? 200 : 60 }}
-                    className="h-full bg-white/5 rounded-md text-white h-screen p-4 flex flex-col overflow-hidden"
+                    className="bg-white/5 rounded-md text-white  p-4 flex flex-col overflow-hidden"
                 >
                     <button onClick={toggleSidebar} className="mb-4">
                         {openSidebar ? <XCircleIcon className="size-4" /> : <Bars3Icon className="size-4" />}
@@ -363,222 +319,11 @@ const Home = () => {
                         ))
                     }
                 </motion.div>
-                <div className={clsx(
-                    "flex-1 p-6",
-                    {
-                        "hidden": index !== 0
-                    }
-                )}>
-                    <HomePage playlist={playlist} setPlaylist={setPlaylist} setCurrentIndex={setCurrentIndex} setVolume={setVolume}
-                        player={player} song={song}
-                        state={state} duration={duration}
-                        audioRef={audioRef} />
-                </div>
-                <div className={clsx(
-                    "flex-1 p-6",
-                    {
-                        "hidden": index !== 1
-                    }
-                )}>
-                    <div className="w-full h-[100vh]">
-                        {
-                            libraries && libraries.length > 0 &&
-                            libraries.map((i, index) => (
-                                <div key={index} className="flex flex-col gap-3">
-                                    <div className="songs flex gap-4 flex-wrap">
-                                        {
-                                            i.albums && i.albums.length > 0 &&
-                                            i.albums.map((a) => {
-                                                a.lib = i.name
-                                                return (
-                                                    <AlbumBox key={a.name} album={a} onClick={_ => {
-                                                        setOpenAlbum(true)
-                                                        setAlbum(a)
-                                                    }} />
-                                                )
-                                            })
-                                        }
-                                    </div>
-                                </div>
-                            ))
-                        }
-                    </div>
-                </div>
-                <div className={clsx(
-                    "flex-1 p-6",
-                    {
-                        "hidden": index !== 2
-                    }
-                )}>
-                    <div className="w-full h-[100vh]">
-                        <ul>
-                            {
-                                libraries && libraries.length > 0 &&
-                                libraries.map((i, index) => (
-                                    <div key={index} className="flex flex-col gap-3">
-                                        <div className="songs flex gap-4 flex-wrap">
-                                            {
-                                                i.songs && i.songs.length > 0 &&
-                                                i.songs.slice((page - 1) * 10, page * 10).map((s) => {
-                                                    s.lib = i.name
-                                                    return (
-                                                        <li key={s.id} className="relative w-full rounded-md p-3 text-sm/6 transition hover:bg-white/5" onClick={_ => {
-                                                            player.play(s)
-                                                        }}>
-
-                                                            <a href="#" className="font-semibold text-white">
-                                                                <span className="absolute inset-0" />
-                                                                {s.name}
-                                                            </a>
-                                                            <ul className="flex gap-2 text-white/50" aria-hidden="true">
-                                                                <li>{s.album}</li>
-                                                                <li aria-hidden="true">&middot;</li>
-                                                                <li>{s.artist}</li>
-                                                                <li aria-hidden="true">&middot;</li>
-                                                                <li>{`${s.format} ${s.bitsPerSample} bit`}</li>
-                                                                <li aria-hidden="true">&middot;</li>
-                                                                <li>{s.samples}</li>
-                                                                <li aria-hidden="true">&middot;</li>
-                                                                <li>{`from ${s.lib}`}</li>
-                                                                <li aria-hidden="true">&middot;</li>
-                                                                <li>{formatDistanceToNow(new Date(s.creation), {
-                                                                    locale: enUS,
-                                                                    addSuffix: true
-                                                                })}
-                                                                </li>
-                                                            </ul>
-                                                        </li>
-                                                    )
-                                                })
-                                            }
-                                            {
-                                                i.songs && i.songs.length > 10 &&
-                                                <div className="flex flex-col-reverse w-full items-center">
-                                                    <Pagination total={i.songs.length} perpage={10} onChange={p => setPage(p)} />
-                                                </div>
-                                            }
-                                        </div>
-                                    </div>
-                                ))
-                            }
-                        </ul>
-                    </div>
-                </div>
-                <div className={clsx(
-                    "p-6 flex w-full",
-                    {
-                        "hidden": index !== 3
-                    }
-                )}>
-                    <div className="flex-2 h-[100vh] mr-6">
-                        <ul>
-                            {
-                                lists && lists.length > 0 &&
-                                lists.map((l, index) => (
-                                    <li key={l.id} className="flex items-center gap-4 w-full rounded-md p-3 text-sm/6 transition hover:bg-white/5 hover:cursor-pointer" onClick={_ => {
-                                        setList(l)
-                                        get<Song[]>('/song/index', { ids: l.songs }).then(res => {
-                                            if (res.data.code === 200) {
-                                                setSongs(res.data.data)
-                                            }
-                                        })
-                                    }}>
-                                        <img alt='cover' className='display-inline w-20 h-20 object-fill rounded-[10px]' src={url + (l.cover ? "/play/getCover/" + l.cover : "/breath.jpg")}></img>
-
-                                        <div className="relative flex flex-col">
-                                            <a href="#" className="font-semibold text-white">
-                                                <span className="absolute inset-0" />
-                                                {l.name}
-                                            </a>
-                                            <ul className="flex gap-2 text-white/50" aria-hidden="true">
-                                                <li>{l.description}</li>
-                                                <li aria-hidden="true">&middot;</li>
-                                                <li>{l.songs.length + ' songs'}</li>
-                                                <li aria-hidden="true">&middot;</li>
-                                                <li>{formatDistanceToNow(new Date(l.creation), {
-                                                    locale: enUS,
-                                                    addSuffix: true
-                                                })}
-                                                </li>
-                                            </ul>
-                                        </div>
-
-                                    </li>
-                                ))
-                            }
-                        </ul>
-                    </div>
-                    <div className="mx-1 w-px bg-white/5" />
-                    <div className="flex-1 ml-6">
-                        {
-                            list &&
-                            <>
-                                <div className="playlistinfo flex items-center gap-4">
-                                    <img alt='cover' className='w-40 h-40 object-fill rounded-[10px]' src={url + (list && list.cover ? "/play/getCover/" + list.cover : "/breath.jpg")}></img>
-                                    <div className="flex flex-col w-[30%] gap-5">
-                                        <h2 className="text-bold text-3xl ml-1">{list.name}</h2>
-                                        <ul className="flex gap-2 text-white/50 ml-1" aria-hidden="true">
-                                                <li>{list.description}</li>
-                                                <li aria-hidden="true">&middot;</li>
-                                                <li>{list.songs.length + ' songs'}</li>
-                                                <li aria-hidden="true">&middot;</li>
-                                                <li>{formatDistanceToNow(new Date(list.creation), {
-                                                    locale: enUS,
-                                                    addSuffix: true
-                                                })}
-                                                </li>
-                                            </ul>
-                                        <div className="flex items-center justify-between my-2 h-auto">
-                                            <Button className='group' onClick={playWholeList}>
-                                                <PlayIcon className="size-10 fill-white/60 transition duration-300 group-hover:fill-white" />
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="my-6 h-px bg-white/5" />
-                                <ul>
-                                    {
-                                        songs &&
-                                        songs.slice((songPage - 1) * 10, songPage * 10).map(s => {
-                                            return (
-                                                <li key={s.id} className="relative w-full rounded-md p-3 text-sm/6 transition hover:bg-white/5" onClick={_ => {
-                                                    player.play(s)
-                                                }}>
-
-                                                    <a href="#" className="font-semibold text-white">
-                                                        <span className="absolute inset-0" />
-                                                        {s.name}
-                                                    </a>
-                                                    <ul className="flex gap-2 text-white/50" aria-hidden="true">
-                                                        <li>{s.album}</li>
-                                                        <li aria-hidden="true">&middot;</li>
-                                                        <li>{s.artist}</li>
-                                                        <li aria-hidden="true">&middot;</li>
-                                                        <li>{`${s.format} ${s.bitsPerSample} bit`}</li>
-                                                        <li aria-hidden="true">&middot;</li>
-                                                        <li>{s.samples}</li>
-                                                        <li aria-hidden="true">&middot;</li>
-                                                        <li>{formatDistanceToNow(new Date(s.creation), {
-                                                            locale: enUS,
-                                                            addSuffix: true
-                                                        })}
-                                                        </li>
-                                                    </ul>
-                                                </li>
-                                            )
-                                        })
-                                    }
-                                    {
-                                        songs && songs.length > 10 &&
-                                        <div className="flex flex-col-reverse w-full items-center">
-                                            <Pagination total={songs.length} perpage={10} onChange={p => setSongPage(p)} />
-                                        </div>
-                                    }
-                                </ul>
-                            </>
-                        }
-                    </div>
-                </div>
+                <HomePage index={index} targetPage={0} playlist={playlist} setPlaylist={setPlaylist} setCurrentIndex={setCurrentIndex} setVolume={setVolume}
+                    player={player} song={song} state={state} duration={duration} audioRef={audioRef} />
+                <AlbumPage index={index} targetPage={1} state={state} showPlayer={showPlayer} setAlbum={setAlbum} setOpenAlbum={setOpenAlbum} setShow={setShow} />
+                <SongPage index={index} targetPage={2} state={state} showPlayer={showPlayer} player={player} setShow={setShow}/>
+                <PlaylistPage index={index} targetPage={3} player={player} setPlaylist={setPlaylist} setCurrentIndex={setCurrentIndex} />
             </div>
             {
                 song && <ControlBar song={song} playlist={playlist} showPlayer={showPlayer} volume={volume} duration={duration}
@@ -596,10 +341,10 @@ const Home = () => {
             }
             <InfoEdit open={openInfo} setOpen={setOpenInfo} album={album} song={song} />
             <LibEdit open={libOpen} setOpen={setLibOpen} lib={lib} setLib={setLib} saveLib={saveLib} />
-            <Settings open={openSetting} setOpen={setOpenSetting} libraries={libraries} setLibOpen={setLibOpen} setLib={setLib} />
+            <Settings open={openSetting} setOpen={setOpenSetting} setLibOpen={setLibOpen} setLib={setLib} />
             <ToastContainer
                 position="top-center"
-                autoClose={1000}
+                autoClose={2000}
                 hideProgressBar={true}
                 draggable={false}
                 newestOnTop={false}

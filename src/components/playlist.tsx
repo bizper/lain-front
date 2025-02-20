@@ -1,20 +1,22 @@
-import { Song } from "@/type"
+import { Player, Song } from "@/type"
 import { formatTime } from "@/utils/kit"
 import { post } from "@/utils/net"
 import { Button, Popover, PopoverButton, PopoverPanel } from "@headlessui/react"
 import { Bars4Icon } from "@heroicons/react/24/solid"
+import { Empty } from "./empty"
+import { Dispatch, SetStateAction } from "react"
 
 type PlaylistAttr = {
     playlist: Song[]
     song: Song
-    play: (song: Song) => void
-    setPlaylist: (songs: Song[]) => void
-    setCurrentIndex: (i: number) => void
+    player: Player
+    setPlaylist: Dispatch<SetStateAction<Song[]>>
+    setCurrentIndex: Dispatch<SetStateAction<number>>
 }
 
 const Playlist = (props: PlaylistAttr) => {
 
-    const { playlist, setPlaylist, play, setCurrentIndex, song } = props
+    const { playlist, setPlaylist, player, setCurrentIndex, song } = props
 
     return (
         <Popover>
@@ -31,10 +33,10 @@ const Playlist = (props: PlaylistAttr) => {
             >
                 <div className="p-3">
                     {
-                        playlist && playlist.length > 0 &&
+                        playlist && playlist.length > 0 ?
                         playlist.map((i, index) => (
                             <a key={i.id} className="block rounded-lg py-2 px-3 transition hover:bg-white/5" href="#" onClick={_ => {
-                                play(i)
+                                player.play(i)
                                 const npl = playlist.filter(item => i.id != item.id)
                                 setPlaylist(npl.concat(i))
                                 setCurrentIndex(npl.length)
@@ -46,17 +48,24 @@ const Playlist = (props: PlaylistAttr) => {
 
                                 <p className="text-white/50">{`${i.album} - ${i.artist}`}</p>
                             </a>
-                        ))
+                        )) : <Empty text='No Songs' />
                     }
-                    <div className="p-2">
-                        <Button className="rounded-lg px-1 py-1 hover:bg-white/5" onClick={_ => {
-                            post('/list/create', {
-                                name: 'Playlist 1',
-                                description: 'for test',
-                                songs: playlist.map(i => i.id)
-                            })
-                        }}>Save As</Button>
-                    </div>
+                    {
+                        playlist && playlist.length > 0 &&
+                        <div className="flex p-2 items-center justify-between">
+                            <Button className="rounded-lg px-3 py-2 hover:bg-white/5" onClick={_ => {
+                                post('/list/create', {
+                                    name: 'Playlist 1',
+                                    description: 'for test',
+                                    songs: playlist.map(i => i.id)
+                                })
+                            }}>Save As</Button>
+                            <Button className="rounded-lg px-3 py-2 hover:bg-white/5 text-red-500" onClick={_ => {
+                                setPlaylist([])
+                                player.pause()
+                            }}>Clear all</Button>
+                        </div>
+                    }
                 </div>
             </PopoverPanel>
         </Popover>
