@@ -11,10 +11,7 @@ type TiltedCard = {
     imageSrc: string
     altText?: string
     captionText?: string
-    containerHeight?: string
-    containerWidth?: string
-    imageHeight?: string
-    imageWidth?: string
+    containerWidth?: number
     scaleOnHover?: number
     rotateAmplitude?: number
     showMobileWarning?: boolean
@@ -28,10 +25,7 @@ const TiltedCard = ({
     imageSrc,
     altText = 'album text',
     captionText = "fff",
-    containerHeight = "250px",
-    containerWidth = "250px",
-    imageHeight = "250px",
-    imageWidth = "250px",
+    containerWidth = 250,
     scaleOnHover = 1.1,
     rotateAmplitude = 12,
     showMobileWarning = true,
@@ -94,8 +88,8 @@ const TiltedCard = ({
             ref={ref}
             className="relative [perspective:800px] flex flex-col items-center justify-center hover:cursor-pointer"
             style={{
-                height: containerHeight,
-                width: containerWidth,
+                height: `${containerWidth}px`,
+                width: `${containerWidth}px`,
             }}
             onMouseMove={handleMouse}
             onMouseEnter={handleMouseEnter}
@@ -109,10 +103,8 @@ const TiltedCard = ({
             )}
 
             <motion.div
-                className="relative [transform-style:preserve-3d]"
+                className="relative [transform-style:preserve-3d] w-full h-full"
                 style={{
-                    width: imageWidth,
-                    height: imageHeight,
                     rotateX,
                     rotateY,
                     scale,
@@ -123,8 +115,8 @@ const TiltedCard = ({
                     alt={altText}
                     className="absolute top-0 left-0 object-cover rounded-[15px] will-change-transform [transform:translateZ(0)]"
                     style={{
-                        width: imageWidth,
-                        height: imageHeight,
+                        width: `${containerWidth}px`,
+                        height: `${containerWidth}px`
                     }}
                 />
 

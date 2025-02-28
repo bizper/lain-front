@@ -11,16 +11,16 @@ type PlayPanelAttr = {
     state: boolean
     player: Player
     duration: number
-    audioRef: React.RefObject<HTMLAudioElement | null>
+    howl?: Howl
 }
 
 const PlayPanel = (
-    { song, state, player, audioRef, duration }: PlayPanelAttr
+    { song, state, player, howl, duration }: PlayPanelAttr
 ) => {
 
     const handleProgressChange = (i: number) => {
-        if (audioRef && audioRef.current) {
-            audioRef.current.currentTime = i * audioRef.current.duration
+        if (howl) {
+            howl.seek(i * howl.duration())
         }
     }
 
@@ -39,8 +39,8 @@ const PlayPanel = (
                 song && <ProgressBar progress={duration / song.duration} className="peer" onProgressChange={handleProgressChange} />
             }
             {
-                audioRef && audioRef.current &&
-                <span className="transition-all duration-1000 text-sm">{formatTime(audioRef.current.currentTime)} / {formatTime(audioRef.current.duration)}</span>
+                howl &&
+                <span className="transition-all duration-1000 text-sm">{formatTime(howl.seek())} / {formatTime(howl.duration())}</span>
             }
             <div className="control flex justify-even items-center gap-6">
                 <Button onClick={player.prev} className='group'>

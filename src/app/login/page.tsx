@@ -79,95 +79,96 @@ const Login = () => {
         <div className="w-full flex items-center justify-center">
             {aurora}
 
+
             <div className="max-w-lg h-[100vh] flex items-center justify-center min-w-lg px-4 z-10">
+                <FadeContent blur={true} duration={1000} easing="ease-out" initialOpacity={0}>
 
-
-                {
-                    loading ? <Loading isLoading text={text} onClick={_ => {
-                        if(connected) router.push('/')
-                    }}/> : <Fieldset className="space-y-6 rounded-xl bg-transparent p-6 sm:p-10">
-                        <Legend className="text-base/2 font-bold text-white text-4xl">Connect to
-                            <h1 className="text-4xl ml-2 font-nova"
+                    {
+                        loading ? <Loading isLoading text={text} onClick={_ => {
+                            if (connected) router.push('/')
+                        }} /> : <Fieldset className="ml-2 space-y-6 rounded-xl bg-transparent p-6 sm:p-10">
+                            <Legend className=" font-bold text-white text-4xl">Connect to
+                                {/* <h1 className="text-4xl ml-2 font-nova"
                                 style={{
                                     display: 'inline',
                                     textShadow: '2px 4px 4px rgba(var(--maincolor), 0.65)'
-                                }}>{locale('TITLE')}</h1>
-                        </Legend>
-                        <Field>
-                            <Label className="text-sm/6 font-medium text-white">
-                                {alertUsername ? locale('LOGIN.USERNAME.ERROR') : locale('LOGIN.USERNAME.SUCCESS')}
-                            </Label>
-                            <Input
-                                autoFocus
-                                value={username}
-                                placeholder="Username"
-                                disabled={connected}
-                                onChange={_ => {
-                                    if (alertUsername) setAlertUsername(false)
-                                    setUsername(_.target.value)
-                                }}
-                                onKeyDown={_ => {
-                                    if (_.code == 'Enter') {
-                                        if (username == '') {
-                                            setAlertUsername(true)
-                                        } else {
-                                            if (passref && passref.current) passref.current.focus()
+                                }}>{locale('TITLE')}</h1> */}
+                            </Legend>
+                            <Field>
+                                <Label className="text-sm/6 font-medium text-white">
+                                    {alertUsername ? locale('LOGIN.USERNAME.ERROR') : locale('LOGIN.USERNAME.SUCCESS')}
+                                </Label>
+                                <Input
+                                    autoFocus
+                                    value={username}
+                                    placeholder="Username"
+                                    disabled={connected}
+                                    onChange={_ => {
+                                        if (alertUsername) setAlertUsername(false)
+                                        setUsername(_.target.value)
+                                    }}
+                                    onKeyDown={_ => {
+                                        if (_.code == 'Enter') {
+                                            if (username == '') {
+                                                setAlertUsername(true)
+                                            } else {
+                                                if (passref && passref.current) passref.current.focus()
+                                            }
                                         }
-                                    }
-                                }}
-                                className={clsx(
-                                    'transition-all duration-300 ease-in disabled:cursor-not-allowed',
-                                    'mt-3 block w-full rounded-lg bg-white/5 py-1.5 px-3 text-sm/6 text-white',
-                                    'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25',
-                                    {
-                                        'border border-red-500': alertUsername
-                                    }
-                                )}
-                            />
-                        </Field>
-                        <Field>
-                            <Label className="text-sm/6 font-medium text-white">{locale('LOGIN.PASSWORD.NORMAL')}</Label>
-                            <Input
-                                type="password"
-                                ref={passref}
-                                value={password}
-                                placeholder="Password"
-                                disabled={connected}
-                                onChange={_ => {
-                                    setPassword(_.target.value)
-                                }}
-                                onKeyDown={_ => {
-                                    if (_.code == 'Enter' && password != '') {
-                                        login()
-                                    }
-                                }}
-                                className={clsx(
-                                    'mt-3 block w-full rounded-lg border-none bg-white/5 py-1.5 px-3 text-sm/6 text-white disabled:cursor-not-allowed',
-                                    'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25'
-                                )}
-                            />
-                        </Field>
-                        <Field className='flex flex-col items-center justify-center mt-10'>
-                            <Button
-                                disabled={connected}
-                                onClick={login}
-                                className="disabled:cursor-not-allowed loginbtn inline-flex items-center gap-2 rounded-md py-1.5 px-3 text-sm/6 font-semibold focus:outline-none data-[hover]:bg-white/10 data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white">
-                                送る
-                            </Button>
-                            <Button
-                                disabled={connected}
-                                onClick={_ => router.push('/')}
-                                className="disabled:cursor-not-allowed text-gray-400 inline-flex items-center gap-2 rounded-md py-1.5 px-3 text-sm/6 font-semibold focus:outline-none data-[hover]:bg-white/10 data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white">
-                                ゲストとして続き
-                            </Button>
-                        </Field>
-                    </Fieldset>
-                }
+                                    }}
+                                    className={clsx(
+                                        'transition-all duration-300 ease-in disabled:cursor-not-allowed',
+                                        'mt-3 block w-full rounded-lg bg-white/5 py-1.5 px-3 text-sm/6 text-white',
+                                        'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25',
+                                        {
+                                            'border border-red-500': alertUsername
+                                        }
+                                    )}
+                                />
+                            </Field>
+                            <Field>
+                                <Label className="text-sm/6 font-medium text-white">{locale('LOGIN.PASSWORD.NORMAL')}</Label>
+                                <Input
+                                    type="password"
+                                    ref={passref}
+                                    value={password}
+                                    placeholder="Password"
+                                    disabled={connected}
+                                    onChange={_ => {
+                                        setPassword(_.target.value)
+                                    }}
+                                    onKeyDown={_ => {
+                                        if (_.code == 'Enter' && password != '') {
+                                            login()
+                                        }
+                                    }}
+                                    className={clsx(
+                                        'mt-3 block w-full rounded-lg border-none bg-white/5 py-1.5 px-3 text-sm/6 text-white disabled:cursor-not-allowed',
+                                        'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25'
+                                    )}
+                                />
+                            </Field>
+                            <Field className='flex flex-col items-center justify-center mt-10'>
+                                <Button
+                                    disabled={connected}
+                                    onClick={login}
+                                    className="disabled:cursor-not-allowed loginbtn inline-flex items-center gap-2 rounded-md py-1.5 px-3 text-sm/6 font-semibold focus:outline-none data-[hover]:bg-white/10 data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white">
+                                    送る
+                                </Button>
+                                <Button
+                                    disabled={connected}
+                                    onClick={_ => router.push('/')}
+                                    className="disabled:cursor-not-allowed text-gray-400 inline-flex items-center gap-2 rounded-md py-1.5 px-3 text-sm/6 font-semibold focus:outline-none data-[hover]:bg-white/10 data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white">
+                                    ゲストとして続き
+                                </Button>
+                            </Field>
+                        </Fieldset>
+                    }
+                </FadeContent>
             </div>
             <div className="mx-2 w-2px bg-white/5" />
             <div className="flex h-[100vh] items-center justify-center z-10">
                 {
-
                     !connected && <FadeContent blur={true} duration={1000} easing="ease-out" initialOpacity={0}>
                         <h1
                             ref={textRef}
@@ -178,7 +179,7 @@ const Login = () => {
                             style={{
                                 textShadow: '2px 4px 4px rgba(var(--maincolor), 0.65)',
                                 filter: 'url(#noise)'
-                            }} data-text='WIRED'>WIRED</h1>
+                            }} data-text='LAIN'>LAIN</h1>
                         <svg style={{ display: 'none' }}>
                             <defs>
                                 <filter id="noise" colorInterpolationFilters="linearRGB" filterUnits="objectBoundingBox" primitiveUnits="userSpaceOnUse">

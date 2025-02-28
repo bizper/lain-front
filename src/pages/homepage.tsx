@@ -7,22 +7,23 @@ import { enUS } from "date-fns/locale";
 import { formatTime } from "@/utils/kit";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
+import { toast } from "react-toastify";
+import { Howl } from "howler";
 
 type HomeAttr = {
-    index: number
-    targetPage: number
     player: Player
     state: boolean
     song?: Song
     duration: number
-    audioRef: React.RefObject<HTMLAudioElement | null>
+    howl?: Howl
     playlist: Song[]
+    supportList?: { [key: string]: boolean }
     setPlaylist: Dispatch<SetStateAction<Song[]>>
     setCurrentIndex: Dispatch<SetStateAction<number>>
     setVolume: Dispatch<SetStateAction<number>>
 }
 
-const HomePage = ({ index, targetPage, player, state, song, duration, audioRef, playlist, setPlaylist, setCurrentIndex, setVolume }: HomeAttr) => {
+const HomePage = ({ player, state, song, duration, howl, playlist, setPlaylist, setCurrentIndex, setVolume, supportList }: HomeAttr) => {
 
     const router = useRouter()
 
@@ -50,6 +51,8 @@ const HomePage = ({ index, targetPage, player, state, song, duration, audioRef, 
             if (data.code === 200) {
                 setList(data.data)
             }
+        }).catch(err => {
+            toast.error('Unable to connect to wired.')
         })
         return () => {
             setUser(undefined)
@@ -59,10 +62,7 @@ const HomePage = ({ index, targetPage, player, state, song, duration, audioRef, 
 
     return (
         <div className={clsx(
-            "flex-1 p-6",
-            {
-                "hidden": index !== targetPage
-            }
+            "flex-1 p-6 h-full overflow-hidden"
         )}>
             <div className="grid gap-4 p-6 sm:grid-cols-2 lg:grid-cols-4">
                 {/* 卡片 1 - 大方块 */}
@@ -96,7 +96,7 @@ const HomePage = ({ index, targetPage, player, state, song, duration, audioRef, 
 
                 {/* 卡片 4 - 占两行 */}
                 <div className="backdrop-blur-2xl text-white p-6 rounded-2xl shadow-lg lg:row-span-2 flex items-center justify-center text-xl h-96 border-t-2 border-l-2 border-r-2 border-white border-opacity-10">
-                    <PlayPanel player={player} state={state} song={song} duration={duration} audioRef={audioRef} />
+                    <PlayPanel player={player} state={state} song={song} duration={duration} howl={howl} />
                 </div>
 
                 {/* 卡片 5 */}
@@ -110,8 +110,16 @@ const HomePage = ({ index, targetPage, player, state, song, duration, audioRef, 
 
                 {/* 卡片 6 */}
                 <div className="text-white p-6 rounded-2xl shadow-lg h-96 flex items-center justify-center text-xl border-t-2 border-l-2 border-r-2 border-white border-opacity-10 overflow-auto">
-                    <div className="w-full flex flex-col justify-center items-center text-sm mt-3">
-                        Your Favourite
+                    <div className="w-full flex flex-col justify-center gap-4 text-xl mt-3">
+
+                        {
+                            supportList && Object.keys(supportList).map(i => (
+                                <div className="flex">
+                                    <span>{i.toUpperCase()}: {supportList[i] ? 'YES' : 'NO'}</span>
+                                </div>
+                            ))
+                        }
+
                     </div>
                 </div>
             </div>

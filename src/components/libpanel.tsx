@@ -109,7 +109,8 @@ const LibPanel = (props: LibPanelAttr) => {
                             </li>
                             <Button
                                 title="scan"
-                                className="rounded-md data-[hover]:bg-white/5 p-2 py-3"
+                                disabled={click}
+                                className="rounded-md data-[hover]:bg-white/5 p-2 py-3 disabled:cursor-not-allowed"
                                 onClick={_ => {
                                     setClick(true)
                                     toast.info('scanning...')

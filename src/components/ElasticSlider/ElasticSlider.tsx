@@ -111,7 +111,7 @@ const Slider: React.FC<SliderProps> = ({
             }
             newValue = Math.min(Math.max(newValue, startingValue), maxValue);
             setValue(newValue);
-            setVolume(Math.ceil(newValue))
+            setVolume(newValue)
             clientX.jump(e.clientX);
         }
     };
@@ -212,7 +212,7 @@ const Slider: React.FC<SliderProps> = ({
                     {rightIcon}
                 </motion.div>
             </motion.div>
-            <p className="absolute text-gray-400 transform -translate-y-4 text-xs font-medium tracking-wide">
+            <p className="absolute text-white transform -translate-y-4 text-xs font-medium tracking-wide">
                 {Math.round(value * 100)}
             </p>
         </>

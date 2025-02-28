@@ -1,6 +1,6 @@
 import { BaseAttr, Library } from "@/type"
 import { Dialog, DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react"
-import { Transcoding } from "./transcoding"
+import { TranscodingPanel } from "./transcoding"
 import { UserPanel } from "./user"
 import { LibPanel } from "./libpanel"
 import { Dispatch, SetStateAction } from "react"
@@ -59,7 +59,7 @@ const Settings = (props: SettingAttr) => {
                                     <UserPanel />
                                 </TabPanel>
                                 <TabPanel key={2} className="rounded-xl bg-white/5 p-3">
-                                    <Transcoding />
+                                    <TranscodingPanel />
                                 </TabPanel>
                             </TabPanels>
                         </TabGroup>

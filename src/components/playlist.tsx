@@ -29,7 +29,7 @@ const Playlist = (props: PlaylistAttr) => {
                     to: "top",
                     gap: '20px'
                 }}
-                className="divide-y backdrop-blur-2xl divide-white/5 rounded-xl bg-white/5 text-sm/6 transition duration-200 ease-in-out [--anchor-gap:var(--spacing-5)] data-[closed]:-translate-y-1 data-[closed]:opacity-0"
+                className="divide-y backdrop-blur-3xl divide-white/5 rounded-xl bg-black/5 text-sm/6 transition duration-200 ease-in-out [--anchor-gap:var(--spacing-5)] data-[closed]:-translate-y-1 data-[closed]:opacity-0"
             >
                 <div className="p-3">
                     {
@@ -37,9 +37,7 @@ const Playlist = (props: PlaylistAttr) => {
                         playlist.map((i, index) => (
                             <a key={i.id} className="block rounded-lg py-2 px-3 transition hover:bg-white/5" href="#" onClick={_ => {
                                 player.play(i)
-                                const npl = playlist.filter(item => i.id != item.id)
-                                setPlaylist(npl.concat(i))
-                                setCurrentIndex(npl.length)
+                                setCurrentIndex(index)
                             }}>
                                 <div className="flex items-center justify-between">
                                     <p className={i.id == song.id ? 'font-semibold text-white mr-4' : 'font-semibold text-white/50 mr-4'}>{i.name}</p>

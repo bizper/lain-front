@@ -1,9 +1,10 @@
 import { Empty } from "@/components/empty"
+import { PopMenu } from "@/components/menu"
 import { Pagination } from "@/components/pagination"
 import { Player, Playlist, Song } from "@/type"
 import { get, url } from "@/utils/net"
 import { Button } from "@headlessui/react"
-import { HeartIcon, PlayIcon, EllipsisHorizontalIcon } from "@heroicons/react/24/solid"
+import { HeartIcon, PlayIcon, EllipsisHorizontalIcon, BarsArrowDownIcon, FaceSmileIcon, ArrowPathIcon, TrashIcon } from "@heroicons/react/24/solid"
 import clsx from "clsx"
 import { formatDistanceToNow } from "date-fns"
 import { enUS } from "date-fns/locale"
@@ -11,14 +12,12 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react"
 import { toast } from "react-toastify"
 
 type PlaylistPageAttr = {
-    index: number
-    targetPage: number
     player: Player
     setPlaylist: Dispatch<SetStateAction<Song[]>>
     setCurrentIndex: Dispatch<SetStateAction<number>>
 }
 
-const PlaylistPage = ({ index, targetPage, player, setPlaylist, setCurrentIndex }: PlaylistPageAttr) => {
+const PlaylistPage = ({ player, setPlaylist, setCurrentIndex }: PlaylistPageAttr) => {
 
     const [list, setList] = useState<Playlist>()
     const [lists, setLists] = useState<Playlist[]>([])
@@ -48,10 +47,7 @@ const PlaylistPage = ({ index, targetPage, player, setPlaylist, setCurrentIndex 
 
     return (
         <div className={clsx(
-            "p-6 flex w-full",
-            {
-                "hidden": index !== targetPage
-            }
+            "p-6 flex w-[90%]"
         )}>
             <div className="flex-2 h-[100vh] mr-6">
                 <ul>
@@ -119,13 +115,20 @@ const PlaylistPage = ({ index, targetPage, player, setPlaylist, setCurrentIndex 
                                     <Button className='group' onClick={playWholeList}>
                                         <PlayIcon className="size-10 fill-white/60 transition duration-300 group-hover:fill-white" />
                                     </Button>
-                                    <Button className='group'>
-                                        <EllipsisHorizontalIcon className="size-10 fill-white/60 transition duration-300 group-hover:fill-white" />
-                                    </Button>
+                                    <PopMenu className="group" icon={<EllipsisHorizontalIcon className="size-10 fill-white/60 transition duration-300 group-hover:fill-white" />} items={[
+                                        <button className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10">
+                                            <ArrowPathIcon className="size-4 fill-white/60" />
+                                            Sync
+                                        </button>,
+                                        <button className="group flex w-full text-red-500 items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10">
+                                            <TrashIcon className="size-4 fill-red-500" />
+                                            Delete
+                                        </button>,
+                                    ]} />
                                 </div>
                             </div>
                         </div>
-                        <div className="my-6 h-px bg-white/5" />
+                        <div className="my-4 h-px bg-white/5" />
                         <ul>
                             {
                                 songs && songs.length > 0 ?

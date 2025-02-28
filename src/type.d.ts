@@ -71,13 +71,22 @@ export type User = {
     username: string
     nickname: string
     level: number
-    perference: Perference
     email: string
     disabled: boolean
     creation: number
     pref: {
         volume: number
+        enableTranscoding: Transcoding
     }
+}
+
+export type Transcoding = {
+    flac: boolean
+    alac: boolean
+    wma: boolean
+    wav: boolean
+    aac: boolean
+    mp3: boolean
 }
 
 export type HomeAuthRes = {
@@ -119,16 +128,16 @@ export type Page = {
 }
 
 export type Player = {
+    soundcore: (url: string) => Howl
     prev: () => void
     next: () => void
-    rndNext: () => void
     resume: () => void
     pause: () => void
     play: (song: Song) => void
 }
 
 export type Core = {
-    
+
 }
 
 export type VoidHandler = () => void

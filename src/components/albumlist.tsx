@@ -3,7 +3,7 @@ import { auth, formatTime, isAuth } from "@/utils/kit"
 import { Dialog, DialogPanel, DialogTitle, Button, MenuButton, MenuItem, MenuItems, Menu } from "@headlessui/react"
 import { PlayIcon, InformationCircleIcon, PauseIcon, PlusIcon, ArrowLeftEndOnRectangleIcon, ArrowLeftStartOnRectangleIcon, Cog6ToothIcon, FaceSmileIcon, QuestionMarkCircleIcon, QueueListIcon } from "@heroicons/react/24/solid"
 import router from "next/router";
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
     Menu as ContextMenu,
     Item,
@@ -16,6 +16,7 @@ import { createPortal } from "react-dom";
 import { Empty } from "./empty";
 import { get, post } from "@/utils/net";
 import { toast } from "react-toastify";
+import clsx from "clsx";
 
 type AlbumListAttr = BaseAttr & {
     album: Album
@@ -52,14 +53,14 @@ const AlbumList = (props: AlbumListAttr) => {
 
     const [lists, setLists] = useState<Playlist[]>()
 
-    const queryPlaylist = () => {
+    useEffect(() => {
         get<Playlist[]>('/list/index').then(res => {
             const data = res.data
             if (data.code === 200) {
                 setLists(data.data)
             }
         })
-    }
+    }, [])
 
     const addAlbumToPlaylist = (id: number) => {
         post('/list/update', {id: id, songs: album.songs.map(i => i.id)}).then(res => {
@@ -77,11 +78,14 @@ const AlbumList = (props: AlbumListAttr) => {
                     <div className="flex min-h-full items-center justify-center p-4">
                         <DialogPanel
                             transition
-                            className="w-full max-w-3xl overflow-auto max-h-[70vh] rounded-xl bg-white/5 p-6 backdrop-blur-2xl duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0"
+                            className={clsx(
+                                "duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0 shadow-[5px_10px_10px_rgba(0,0,0,0.2)]",
+                                "w-full max-w-5xl overflow-auto max-h-[70vh] rounded-xl bg-black/30 p-6 backdrop-blur-2xl"
+                            )}
                         >
                             <DialogTitle as="h3" className="text-base/7 font-medium text-white mb-2">
                                 <div className="flex justify-between items-center">
-                                    <div>
+                                    <div className="max-w-[85%]">
                                         <div className='font-semibold text-white text-xl'>
                                             {album.name}
                                         </div>
@@ -102,7 +106,7 @@ const AlbumList = (props: AlbumListAttr) => {
                                         </Button>
                                         {
                                             isAuth() && <Menu>
-                                                <MenuButton onClick={queryPlaylist} className="group rounded-md py-1.5 px-1.5 text-sm/6 font-semibold text-white data-[focus]:outline-1 data-[focus]:outline-white">
+                                                <MenuButton className="group rounded-md py-1.5 px-1.5 text-sm/6 font-semibold text-white data-[focus]:outline-1 data-[focus]:outline-white">
                                                     <PlusIcon className="size-10 fill-white/60 transition duration-300 group-hover:fill-white" />
                                                 </MenuButton>
                                                 <MenuItems

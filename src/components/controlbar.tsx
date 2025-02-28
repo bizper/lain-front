@@ -7,6 +7,7 @@ import { VolumeControl } from "./volume"
 import { Player, Song } from "@/type"
 import { Dispatch, ReactNode, SetStateAction } from "react"
 import { url } from "@/utils/net"
+import { Howl } from 'howler';
 
 enum PlayMode {
     LOOP,
@@ -23,12 +24,12 @@ const playmode: {
 }
 
 type ControlBarAttr = {
-    song: Song
+    song?: Song
     state: boolean
     playMode: PlayMode
     volume: number
     duration: number
-    audioRef: React.RefObject<HTMLAudioElement | null>
+    howl?: Howl
     setShow: Dispatch<SetStateAction<boolean>>
     setPlayMode: Dispatch<SetStateAction<PlayMode>>
     setVolume: (v: number) => void
@@ -50,7 +51,7 @@ const ControlBar = (props: ControlBarAttr) => {
         playMode,
         duration,
         playlist,
-        audioRef,
+        howl,
         setShow,
         setPlayMode,
         setVolume,
@@ -59,20 +60,22 @@ const ControlBar = (props: ControlBarAttr) => {
     } = props
 
     const handleProgressChange = (i: number) => {
-        if (audioRef && audioRef.current) {
-            audioRef.current.currentTime = i * audioRef.current.duration
+        if (howl) {
+            howl.seek(i * howl.duration())
         }
     }
 
+    if(!song) return null
+
     return (
-        <div className={`fixed bottom-0 w-full h-[100px] bg-gray-950 text-white flex items-center justify-center ${showPlayer ? '' : 'hidden'}`}>
+        <div className={`fixed bottom-0 w-full h-[100px] backdrop-blur-2xl bg-gray-950/5 text-white flex items-center justify-center shadow-[0_-2px_5px_rgba(0,0,0,0.1)] ${showPlayer ? '' : 'hidden'}`}>
             <div>
                 {
-                    song ? <img alt='cover' className='w-20 h-20 object-fill rounded-[5px]' src={url + "/play/getCover/" + song.cover}></img> : <MusicalNoteIcon className="size-10 fill-white/60" />
+                    song ? <img alt='cover' className='w-20 h-20 object-fill rounded-[5px] shadow-[5px_10px_10px_rgba(0,0,0,0.2)] transition-transform duration-500 hover:scale-105 cursor-pointer' src={url + "/play/getCover/" + song.cover}></img> : <MusicalNoteIcon className="size-10 fill-white/60" />
                 }
             </div>
             <div className="info h-[100px] w-1/3 p-1 flex flex-col items-center justify-center gap-2">
-                <div className="w-80 overflow-hidden">
+                <div className="w-[80%] overflow-hidden">
                     <span className={state ? "inline-block whitespace-nowrap animate-marquee" : "inline-block whitespace-nowrap"}>
                         {`${song.name} - ${song.artist}`}
                     </span>
@@ -105,8 +108,8 @@ const ControlBar = (props: ControlBarAttr) => {
             <div className="progress w-1/4 flex flex-col items-center justify-center gap-1">
                 <ProgressBar progress={duration / song.duration} className="peer" onProgressChange={handleProgressChange} />
                 {
-                    audioRef && audioRef.current &&
-                    <span className="transition-all duration-1000 mt-1">{formatTime(audioRef.current.currentTime)} / {formatTime(audioRef.current.duration)}</span>
+                    howl &&
+                    <span className="transition-all duration-1000 mt-1">{formatTime(duration)} / {formatTime(song.duration)}</span>
                 }
 
             </div>
@@ -119,10 +122,8 @@ const ControlBar = (props: ControlBarAttr) => {
                 <Button
                     onClick={_ => {
                         setShow(false)
-                        if (audioRef.current) {
-                            if (state) {
-                                audioRef.current.pause()
-                            }
+                        if (state) {
+                            player.pause()
                         }
                     }}
                     className="inline-flex items-center gap-2 rounded-md py-1.5 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[hover]:bg-maincolor data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white">
