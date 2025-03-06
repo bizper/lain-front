@@ -29,8 +29,9 @@ const VolumeControl = ({ volume, setVolume }: VolumeAttr) => {
             >
                 <div className="h-[70px] w-60 flex flex-col gap-2 items-center justify-center" >
                     <ElasticSlider
-                        leftIcon={<SpeakerXMarkIcon className="size-4 fill-white/60"/>}
-                        rightIcon={<SpeakerWaveIcon className="size-4 fill-white/60"/>}
+                        className="w-48"
+                        leftIcon={<SpeakerXMarkIcon className="size-4 fill-white/60" />}
+                        rightIcon={<SpeakerWaveIcon className="size-4 fill-white/60" />}
                         startingValue={0}
                         defaultValue={volume}
                         maxValue={1}

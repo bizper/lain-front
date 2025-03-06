@@ -42,14 +42,12 @@ const AlbumList = (props: AlbumListAttr) => {
         album,
         song,
         player,
+        playlist,
         setOpen,
         setAlbum,
         setInfoOpen,
+        setPlaylist,
         playWholeAlbum } = props
-
-    const { show } = useContextMenu({
-        id: MENU_ID
-    });
 
     const [lists, setLists] = useState<Playlist[]>()
 
@@ -63,9 +61,9 @@ const AlbumList = (props: AlbumListAttr) => {
     }, [])
 
     const addAlbumToPlaylist = (id: number) => {
-        post('/list/update', {id: id, songs: album.songs.map(i => i.id)}).then(res => {
+        post('/list/update', { id: id, songs: album.songs.map(i => i.id) }).then(res => {
             const data = res.data
-            if(data.code === 200) {
+            if (data.code === 200) {
                 toast.success('success')
             }
         })
@@ -80,7 +78,7 @@ const AlbumList = (props: AlbumListAttr) => {
                             transition
                             className={clsx(
                                 "duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0 shadow-[5px_10px_10px_rgba(0,0,0,0.2)]",
-                                "w-full max-w-5xl overflow-auto max-h-[70vh] rounded-xl bg-black/30 p-6 backdrop-blur-2xl"
+                                "w-full max-w-5xl overflow-auto max-h-[70vh] rounded-xl bg-black/30 p-6 backdrop-blur-2xl scrollbar-hide"
                             )}
                         >
                             <DialogTitle as="h3" className="text-base/7 font-medium text-white mb-2">
@@ -116,14 +114,14 @@ const AlbumList = (props: AlbumListAttr) => {
                                                 >
                                                     {
                                                         lists && lists.length > 0 ?
-                                                        lists.map(i => (
-                                                            <MenuItem key={i.id}>
-                                                                <button className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10" onClick={_ => addAlbumToPlaylist(i.id)}>
-                                                                    <QueueListIcon className="size-4 fill-white/60" />
-                                                                    {`Add to ${i.name}`}
-                                                                </button>
-                                                            </MenuItem>
-                                                        )) : <Empty text="No Playlist" />
+                                                            lists.map(i => (
+                                                                <MenuItem key={i.id}>
+                                                                    <button className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10" onClick={_ => addAlbumToPlaylist(i.id)}>
+                                                                        <QueueListIcon className="size-4 fill-white/60" />
+                                                                        {`Add to ${i.name}`}
+                                                                    </button>
+                                                                </MenuItem>
+                                                            )) : <Empty text="No Playlist" />
                                                     }
 
                                                 </MenuItems>
@@ -154,7 +152,11 @@ const AlbumList = (props: AlbumListAttr) => {
                                                     }} /> :
                                                     <PlayIcon className="size-6 fill-white/60 transition duration-300 group-hover:fill-white" onClick={_ => {
                                                         if (song && song.id === s.id) player.resume()
-                                                        else player.play(s)
+                                                        else {
+                                                            setPlaylist(playlist.concat(s))
+                                                            console.log("hi")
+                                                            player.play(s)
+                                                        }
                                                     }} />
                                             }
                                         </Button>
@@ -175,25 +177,7 @@ const AlbumList = (props: AlbumListAttr) => {
                     </div>
                 </div>
             </Dialog>
-            {
-                createPortal(<ContextMenu id={MENU_ID} theme='dark'>
-                    <Item >
-                        Item 1
-                    </Item>
-                    <Item >
-                        Item 2
-                    </Item>
-                    <Separator />
-                    <Item disabled>Disabled</Item>
-                    <Separator />
-                    <Submenu label="Submenu">
-                        <Item >
-                            Sub Item 1
-                        </Item>
-                        <Item >Sub Item 2</Item>
-                    </Submenu>
-                </ContextMenu>, document.body)
-            }
+            
         </div>
     )
 }

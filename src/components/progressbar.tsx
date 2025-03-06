@@ -19,14 +19,12 @@ const ProgressBar = ({ progress, className, onProgressChange }: ProgressBarAttr)
     return (
         <div className={clsx(
             "w-full bg-white/5 rounded-full h-4 overflow-hidden border-t-opacity-10 cursor-pointer",
-            {
-                "border-t-[1px] border-r-[1px] border-t-maincolor border-r-maincolor": false
-            },
             "border-l-[1px] border-b-[1px] border-l-white/5 border-b-white/5",
+            "hover:scale-105 transition-all duration-300",
             className
         )} onClick={handleClick}>
             <div
-                className="bg-gradient-to-b from-[#06e4cf] to-maincolor h-full rounded-full transition-all duration-300"
+                className="bg-white/80 backdrop-blur-3xl h-full hover:scale-105 rounded-full transition-all duration-300"
                 style={{ width: `${progress * 100}%` }}
             ></div>
         </div>

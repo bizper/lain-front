@@ -5,7 +5,7 @@ import { Playlist } from "./playlist"
 import { ProgressBar } from "./progressbar"
 import { VolumeControl } from "./volume"
 import { Player, Song } from "@/type"
-import { Dispatch, ReactNode, SetStateAction } from "react"
+import { Dispatch, ReactNode, SetStateAction, useState } from "react"
 import { url } from "@/utils/net"
 import { Howl } from 'howler';
 
@@ -31,6 +31,7 @@ type ControlBarAttr = {
     duration: number
     howl?: Howl
     setShow: Dispatch<SetStateAction<boolean>>
+    setOpenSongPage: Dispatch<SetStateAction<boolean>>
     setPlayMode: Dispatch<SetStateAction<PlayMode>>
     setVolume: (v: number) => void
     setCurrentIndex: Dispatch<SetStateAction<number>>
@@ -56,8 +57,11 @@ const ControlBar = (props: ControlBarAttr) => {
         setPlayMode,
         setVolume,
         setCurrentIndex,
-        setPlaylist
+        setPlaylist,
+        setOpenSongPage
     } = props
+
+
 
     const handleProgressChange = (i: number) => {
         if (howl) {
@@ -65,11 +69,11 @@ const ControlBar = (props: ControlBarAttr) => {
         }
     }
 
-    if(!song) return null
+    if (!song) return null
 
     return (
-        <div className={`fixed bottom-0 w-full h-[100px] backdrop-blur-2xl bg-gray-950/5 text-white flex items-center justify-center shadow-[0_-2px_5px_rgba(0,0,0,0.1)] ${showPlayer ? '' : 'hidden'}`}>
-            <div>
+        <div className={`fixed bottom-0 w-full h-[100px] backdrop-blur-2xl bg-black/20 text-white flex items-center justify-center shadow-[0_-2px_5px_rgba(0,0,0,0.1)] ${showPlayer ? '' : 'hidden'}`}>
+            <div onClick={_ => setOpenSongPage(true)}>
                 {
                     song ? <img alt='cover' className='w-20 h-20 object-fill rounded-[5px] shadow-[5px_10px_10px_rgba(0,0,0,0.2)] transition-transform duration-500 hover:scale-105 cursor-pointer' src={url + "/play/getCover/" + song.cover}></img> : <MusicalNoteIcon className="size-10 fill-white/60" />
                 }
@@ -109,7 +113,14 @@ const ControlBar = (props: ControlBarAttr) => {
                 <ProgressBar progress={duration / song.duration} className="peer" onProgressChange={handleProgressChange} />
                 {
                     howl &&
-                    <span className="transition-all duration-1000 mt-1">{formatTime(duration)} / {formatTime(song.duration)}</span>
+                    <div className="w-full flex items-center justify-between text-gray-400">
+                        <span className="text-xl">
+                            {formatTime(howl.seek())}
+                        </span>
+                        <span className="text-xl">
+                            -{formatTime(howl.duration() - howl.seek())}
+                        </span>
+                    </div>
                 }
 
             </div>

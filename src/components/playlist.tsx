@@ -29,7 +29,7 @@ const Playlist = (props: PlaylistAttr) => {
                     to: "top",
                     gap: '20px'
                 }}
-                className="divide-y backdrop-blur-3xl divide-white/5 rounded-xl bg-black/5 text-sm/6 transition duration-200 ease-in-out [--anchor-gap:var(--spacing-5)] data-[closed]:-translate-y-1 data-[closed]:opacity-0"
+                className="scrollbar-hide divide-y backdrop-blur-3xl divide-white/5 rounded-xl bg-black/5 text-sm/6 transition duration-200 ease-in-out [--anchor-gap:var(--spacing-5)] data-[closed]:-translate-y-1 data-[closed]:opacity-0"
             >
                 <div className="p-3">
                     {

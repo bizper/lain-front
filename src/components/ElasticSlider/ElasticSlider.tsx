@@ -18,6 +18,7 @@ interface ElasticSliderProps {
     stepSize?: number;
     leftIcon?: React.ReactNode;
     rightIcon?: React.ReactNode;
+    showNum?: boolean
     setVolume: (v: number) => void;
 }
 
@@ -30,11 +31,12 @@ const ElasticSlider: React.FC<ElasticSliderProps> = ({
     stepSize = 1,
     leftIcon = <>-</>,
     rightIcon = <>+</>,
+    showNum = true,
     setVolume
 }) => {
     return (
         <div
-            className={`flex flex-col items-center justify-center gap-4 w-48 ${className}`}
+            className={`flex flex-col items-center justify-center gap-4 ${className}`}
         >
             <Slider
                 defaultValue={defaultValue}
@@ -44,6 +46,7 @@ const ElasticSlider: React.FC<ElasticSliderProps> = ({
                 stepSize={stepSize}
                 leftIcon={leftIcon}
                 rightIcon={rightIcon}
+                showNum={showNum}
                 setVolume={setVolume}
             />
         </div>
@@ -58,6 +61,7 @@ interface SliderProps {
     stepSize: number;
     leftIcon: React.ReactNode;
     rightIcon: React.ReactNode;
+    showNum?: boolean
     setVolume: (v: number) => void;
 }
 
@@ -69,6 +73,7 @@ const Slider: React.FC<SliderProps> = ({
     stepSize,
     leftIcon,
     rightIcon,
+    showNum,
     setVolume
 }) => {
     const [value, setValue] = useState<number>(defaultValue);
@@ -160,7 +165,7 @@ const Slider: React.FC<SliderProps> = ({
 
                 <div
                     ref={sliderRef}
-                    className="relative flex w-full max-w-xs flex-grow cursor-grab touch-none select-none items-center py-4"
+                    className="relative flex max-w-full flex-grow cursor-grab touch-none select-none items-center py-4"
                     onPointerMove={handlePointerMove}
                     onPointerDown={handlePointerDown}
                     onPointerUp={handlePointerUp}
@@ -189,9 +194,9 @@ const Slider: React.FC<SliderProps> = ({
                         }}
                         className="flex flex-grow"
                     >
-                        <div className="relative h-full flex-grow overflow-hidden rounded-full bg-gray-400">
+                        <div className="relative h-full flex-grow overflow-hidden rounded-full bg-white/30 backdrop-blur-3xl">
                             <div
-                                className="absolute h-full bg-maincolor rounded-full"
+                                className="absolute h-full bg-white/90 rounded-full"
                                 style={{ width: `${getRangePercentage()}%` }}
                             />
                         </div>
@@ -212,9 +217,12 @@ const Slider: React.FC<SliderProps> = ({
                     {rightIcon}
                 </motion.div>
             </motion.div>
-            <p className="absolute text-white transform -translate-y-4 text-xs font-medium tracking-wide">
-                {Math.round(value * 100)}
-            </p>
+            {
+                showNum && <p className="absolute text-white transform -translate-y-4 text-xs font-medium tracking-wide">
+                    {Math.round(value * 100)}
+                </p>
+            }
+
         </>
     );
 };
