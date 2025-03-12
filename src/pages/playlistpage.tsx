@@ -1,7 +1,7 @@
 import { Empty } from "@/components/empty"
 import { PopMenu } from "@/components/menu"
 import { Pagination } from "@/components/pagination"
-import { Player, Playlist, Song } from "@/type"
+import { CoreMethods, Playlist, Song } from "@/type"
 import { get, url } from "@/utils/net"
 import { Button } from "@headlessui/react"
 import { HeartIcon, PlayIcon, EllipsisHorizontalIcon, BarsArrowDownIcon, FaceSmileIcon, ArrowPathIcon, TrashIcon } from "@heroicons/react/24/solid"
@@ -12,12 +12,17 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react"
 import { toast } from "react-toastify"
 
 type PlaylistPageAttr = {
-    player: Player
     setPlaylist: Dispatch<SetStateAction<Song[]>>
     setCurrentIndex: Dispatch<SetStateAction<number>>
-}
+} & CoreMethods
 
-const PlaylistPage = ({ player, setPlaylist, setCurrentIndex }: PlaylistPageAttr) => {
+const PlaylistPage = ({ 
+    play,
+    resume,
+    pause, 
+    setPlaylist, 
+    setCurrentIndex 
+}: PlaylistPageAttr) => {
 
     const [list, setList] = useState<Playlist>()
     const [lists, setLists] = useState<Playlist[]>([])
@@ -26,7 +31,7 @@ const PlaylistPage = ({ player, setPlaylist, setCurrentIndex }: PlaylistPageAttr
 
     const playWholeList = () => {
         if (list && songs) {
-            player.play(songs[0])
+            play(songs[0])
             setPlaylist(songs)
             setCurrentIndex(0)
         }
@@ -72,8 +77,6 @@ const PlaylistPage = ({ player, setPlaylist, setCurrentIndex }: PlaylistPageAttr
                                         {l.name}
                                     </a>
                                     <ul className="flex gap-2 text-white/50" aria-hidden="true">
-                                        <li>{l.description}</li>
-                                        <li aria-hidden="true">&middot;</li>
                                         <li>{l.songs.length + ' songs'}</li>
                                         <li aria-hidden="true">&middot;</li>
                                         <li>{formatDistanceToNow(new Date(l.creation), {
@@ -103,7 +106,7 @@ const PlaylistPage = ({ player, setPlaylist, setCurrentIndex }: PlaylistPageAttr
                                 <ul className="flex gap-2 text-white/50 ml-1" aria-hidden="true">
                                     <li>{list.description}</li>
                                     <li aria-hidden="true">&middot;</li>
-                                    <li>{list.songs.length + ' songs'}</li>
+                                    <li>{(list.songs ? list.songs.length : 0) + ' songs'}</li>
                                     <li aria-hidden="true">&middot;</li>
                                     <li>{formatDistanceToNow(new Date(list.creation), {
                                         locale: enUS,
@@ -135,7 +138,7 @@ const PlaylistPage = ({ player, setPlaylist, setCurrentIndex }: PlaylistPageAttr
                                     songs.slice((songPage - 1) * 6, songPage * 6).map(s => {
                                         return (
                                             <li key={s.id} className="relative w-full rounded-md p-3 text-sm/6 transition hover:bg-white/5" onClick={_ => {
-                                                player.play(s)
+                                                play(s)
                                             }}>
 
                                                 <a href="#" className="font-semibold text-white">

@@ -6,6 +6,7 @@ import { User, Transcoding } from "@/type"
 
 const TranscodingPanel = () => {
 
+    const [support, setSupport] = useState(false)
     const [enabled, setEnabled] = useState(false)
     const [FLAC, setFLAC] = useState(false)
     const [AAC, setAAC] = useState(false)
@@ -14,9 +15,13 @@ const TranscodingPanel = () => {
     const [ALAC, setALAC] = useState(false)
 
     useEffect(() => {
-        get<User>('/user/me').then(res => {
+        get<{
+            user: User
+            supportTranscode: boolean
+        }>('/user/me').then(res => {
             const data = res.data
-            const setting = data.data.pref.enableTranscoding
+            setSupport(data.data.supportTranscode)
+            const setting = data.data.user.pref.enableTranscoding
             if (setting) {
                 setEnabled(true)
                 if (setting.flac) setFLAC(setting.flac)
@@ -34,14 +39,23 @@ const TranscodingPanel = () => {
 
     return (
         <Fieldset className="space-y-3 p-4">
+            <Legend className={clsx(
+                "text-base/7 font-semibold text-white"
+            )}>{`Transcoding`}</Legend>
+            {
+                !support && <Legend className={clsx(
+                    "text-sm text-red-500"
+                )}>{`Server does not support`}</Legend>
+            }
             <Field className='flex items-center gap-3'>
                 <Switch
                     checked={enabled}
+                    disabled={!support}
                     onChange={_ => {
                         updateSetting({ enableTranscoding: _ })
                         setEnabled(_)
                     }}
-                    className="group relative flex h-5 w-10 cursor-pointer rounded-full bg-white/10 p-1 transition-colors duration-200 ease-in-out focus:outline-none data-[focus]:outline-1 data-[focus]:outline-white data-[checked]:bg-maincolor"
+                    className="disabled:cursor-not-allowed disabled:data-[checked]:bg-black/40 group relative flex h-5 w-10 cursor-pointer rounded-full bg-white/10 p-1 transition-colors duration-200 ease-in-out focus:outline-none data-[focus]:outline-1 data-[focus]:outline-white data-[checked]:bg-maincolor"
                 >
                     <span
                         aria-hidden="true"
@@ -55,11 +69,13 @@ const TranscodingPanel = () => {
                 <Field className="space-x-3 flex gap-3 items-center" disabled={!enabled}>
                     <Switch
                         checked={FLAC}
+                        disabled={!support}
                         onChange={_ => {
                             updateSetting({ flac: _, enableTranscoding: enabled })
                             setFLAC(_)
                         }}
                         className={clsx(
+                            "disabled:cursor-not-allowed disabled:data-[checked]:bg-black/40",
                             "group relative flex h-5 w-10 cursor-pointer rounded-full bg-white/10 p-1",
                             "transition-colors duration-200 ease-in-out focus:outline-none",
                             "data-[focus]:outline-1 data-[focus]:outline-white data-[checked]:bg-maincolor",
@@ -81,11 +97,13 @@ const TranscodingPanel = () => {
                 <Field className="space-x-3 flex gap-3 items-center" disabled={!enabled}>
                     <Switch
                         checked={AAC}
+                        disabled={!support}
                         onChange={_ => {
                             updateSetting({ aac: _, enableTranscoding: enabled })
                             setAAC(_)
                         }}
                         className={clsx(
+                            "disabled:cursor-not-allowed disabled:data-[checked]:bg-black/40",
                             "group relative flex h-5 w-10 cursor-pointer rounded-full bg-white/10 p-1",
                             "transition-colors duration-200 ease-in-out focus:outline-none",
                             "data-[focus]:outline-1 data-[focus]:outline-white data-[checked]:bg-maincolor",
@@ -107,11 +125,13 @@ const TranscodingPanel = () => {
                 <Field className="space-x-3 flex gap-3 items-center" disabled={!enabled}>
                     <Switch
                         checked={MP3}
+                        disabled={!support}
                         onChange={_ => {
                             updateSetting({ mp3: _, enableTranscoding: enabled })
                             setMP3(_)
                         }}
                         className={clsx(
+                            "disabled:cursor-not-allowed disabled:data-[checked]:bg-black/40",
                             "group relative flex h-5 w-10 cursor-pointer rounded-full bg-white/10 p-1",
                             "transition-colors duration-200 ease-in-out focus:outline-none",
                             "data-[focus]:outline-1 data-[focus]:outline-white data-[checked]:bg-maincolor",
@@ -133,11 +153,13 @@ const TranscodingPanel = () => {
                 <Field className="space-x-3 flex gap-3 items-center" disabled={!enabled}>
                     <Switch
                         checked={WMA}
+                        disabled={!support}
                         onChange={_ => {
                             updateSetting({ wma: _, enableTranscoding: enabled })
                             setWMA(_)
                         }}
                         className={clsx(
+                            "disabled:cursor-not-allowed disabled:data-[checked]:bg-black/40",
                             "group relative flex h-5 w-10 cursor-pointer rounded-full bg-white/10 p-1",
                             "transition-colors duration-200 ease-in-out focus:outline-none",
                             "data-[focus]:outline-1 data-[focus]:outline-white data-[checked]:bg-maincolor",
@@ -159,11 +181,13 @@ const TranscodingPanel = () => {
                 <Field className="space-x-3 flex gap-3 items-center" disabled={!enabled}>
                     <Switch
                         checked={ALAC}
+                        disabled={!support}
                         onChange={_ => {
                             updateSetting({ alac: _, enableTranscoding: enabled })
                             setALAC(_)
                         }}
                         className={clsx(
+                            "disabled:cursor-not-allowed disabled:data-[checked]:bg-black/40",
                             "group relative flex h-5 w-10 cursor-pointer rounded-full bg-white/10 p-1",
                             "transition-colors duration-200 ease-in-out focus:outline-none",
                             "data-[focus]:outline-1 data-[focus]:outline-white data-[checked]:bg-maincolor",

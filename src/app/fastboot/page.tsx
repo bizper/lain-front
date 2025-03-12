@@ -24,9 +24,11 @@ const Fastboot = () => {
         post<LoginRes>('/auth/init', { username: 'root', password: password }).then(res => {
             const data = res.data
             if (data.code == 200) {
+                localStorage.setItem('token', data.data.token)
+                localStorage.setItem('expires', data.data.expires.toString())
                 toast.success("connected!", {
                     onClose: (reason) => {
-                        router.push('/login')
+                        router.push('/')
                     }
                 })
             } else {

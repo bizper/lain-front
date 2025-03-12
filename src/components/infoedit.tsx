@@ -21,7 +21,7 @@ const InfoEdit = (props: InfoEditAttr) => {
                     <div className="flex min-h-full items-center justify-center p-4">
                         <DialogPanel
                             transition
-                            className="w-full max-w-md rounded-xl bg-white/5 p-6 backdrop-blur-2xl duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0"
+                            className="w-full max-w-md rounded-xl bg-black/30 p-6 backdrop-blur-2xl duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0"
                         >
                             <DialogTitle as="h3" className="text-base/7 font-bold text-white">
                                 {`Edit Album: ${album.name}`}
@@ -63,7 +63,7 @@ const InfoEdit = (props: InfoEditAttr) => {
                             </Field>
                             <div className="mt-4 flex flex-row-reverse">
                                 <Button
-                                    className="inline-flex items-center gap-2 rounded-md bg-gray-700 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-gray-600 data-[focus]:outline-1 data-[focus]:outline-white data-[open]:bg-gray-700"
+                                    className="inline-flex items-center gap-2 rounded-md py-1.5 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[hover]:bg-white/5 data-[open]:bg-gray-700"
                                     onClick={_ => setOpen(false)}
                                 >
                                     Save

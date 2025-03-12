@@ -1,5 +1,5 @@
 import { Pagination } from "@/components/pagination"
-import { Library, Player } from "@/type"
+import { CoreMethods, Library } from "@/type"
 import { get } from "@/utils/net"
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react"
 import { ChevronDownIcon, CheckIcon } from "@heroicons/react/24/solid"
@@ -10,13 +10,21 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react"
 import { toast } from "react-toastify"
 
 type SongPageAttr = {
-    player: Player
     state: boolean
     showPlayer: boolean
     setShow: Dispatch<SetStateAction<boolean>>
-}
+} & CoreMethods
 
-const SongPage = ({ player, state, showPlayer, setShow }: SongPageAttr) => {
+const SongPage = ({ 
+    play,
+    resume,
+    pause,
+    prev,
+    next, 
+    state, 
+    showPlayer, 
+    setShow 
+}: SongPageAttr) => {
 
     const [libraries, setLibraries] = useState<Library[]>([])
     const [selected, setSelected] = useState<Library>()
@@ -85,7 +93,7 @@ const SongPage = ({ player, state, showPlayer, setShow }: SongPageAttr) => {
                                 s.lib = selected.name
                                 return (
                                     <li key={s.id} className="relative w-full rounded-md p-3 text-sm/6 transition hover:bg-white/5" onClick={_ => {
-                                        player.play(s)
+                                        play(s)
                                     }}>
 
                                         <a href="#" className="font-semibold text-white">
@@ -100,8 +108,6 @@ const SongPage = ({ player, state, showPlayer, setShow }: SongPageAttr) => {
                                             <li>{`${s.format} ${s.bitsPerSample} bit`}</li>
                                             <li aria-hidden="true">&middot;</li>
                                             <li>{s.samples}</li>
-                                            <li aria-hidden="true">&middot;</li>
-                                            <li>{`from ${s.lib}`}</li>
                                             <li aria-hidden="true">&middot;</li>
                                             <li>{formatDistanceToNow(new Date(s.creation), {
                                                 locale: enUS,

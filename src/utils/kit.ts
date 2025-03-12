@@ -1,5 +1,5 @@
 import { lang } from "@/lang";
-import { LANG, Player, Song } from "@/type";
+import { LANG, Song } from "@/type";
 import { toast } from "react-toastify";
 
 function getRandomInt(min: number, max: number) {
@@ -44,9 +44,9 @@ const isRoot = (): boolean => {
     return true
 }
 
-const auth = (func: () => void) => {
+const auth = (func: Function, ...args: any[]) => {
     if (isAuth()) {
-        func()
+        func(args)
     } else {
         toast.warn('You have to log in first.', {
             autoClose: 3000

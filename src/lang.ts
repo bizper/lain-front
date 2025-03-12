@@ -22,5 +22,8 @@ export const lang: LANG = {
                 "BYARTIST": "Artist"
             }
         }
+    },
+    "SETTING": {
+        "NAME": "Settings"
     }
 }

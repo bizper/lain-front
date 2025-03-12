@@ -1,67 +1,29 @@
 import { BaseAttr, Library } from "@/type"
 import { auth } from "@/utils/kit"
-import { get, post } from "@/utils/net"
+import { post } from "@/utils/net"
 import { Button } from "@headlessui/react"
-import { PlusCircleIcon, MagnifyingGlassCircleIcon, TrashIcon } from "@heroicons/react/24/solid"
+import { PlusCircleIcon, MagnifyingGlassCircleIcon, TrashIcon, FaceSmileIcon, FaceFrownIcon, EyeSlashIcon, EyeIcon } from "@heroicons/react/24/solid"
 import clsx from "clsx"
 import { formatDistanceToNow } from "date-fns"
 import { enUS } from "date-fns/locale"
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react"
+import { Dispatch, SetStateAction, useState } from "react"
 import { toast } from "react-toastify"
-import gsap from "gsap"
+import { Empty } from "./empty"
+import { usePopup } from "./popup"
 
 type LibPanelAttr = {
+    libraries: Library[]
     setLibOpen: Dispatch<SetStateAction<boolean>>
     setLib: Dispatch<SetStateAction<Library | undefined>>
 } & BaseAttr
 
 const LibPanel = (props: LibPanelAttr) => {
 
-    const [libraries, setLibraries] = useState<Library[]>()
     const [click, setClick] = useState(false)
-    const [timeline, setTimeline] = useState<GSAPTimeline>()
-    const tweenRef = useRef<SVGSVGElement>(null);
 
-    const { setOpen, setLibOpen, setLib } = props
+    const { libraries, setLibOpen, setLib } = props
 
-    useEffect(() => {
-        get<Library[]>('/lib/index').then(res => {
-            if (res.status === 200) {
-                const data = res.data
-                if (data.code == 200) {
-                    setLibraries(data.data)
-                }
-            } else {
-                toast.error('Unable to connect to wired.')
-            }
-        })
-    }, [])
-
-    const handleMouseDown = () => {
-        if (tweenRef && tweenRef.current) {
-            setTimeline(
-                gsap.timeline()
-                    .to(tweenRef.current, {
-                        duration: 2,
-                        color: "red",
-                        onComplete: () => {
-                            gsap.set(tweenRef.current, { color: "white" });
-                            setTimeline(undefined)
-                            toast.success('deleting...')
-                            deleteLib(1); // 5秒后执行回调函数
-                        }
-                    })
-            );
-        }
-    };
-
-    const handleMouseUp = () => {
-        if (timeline) {
-            console.log('action cancelled;')
-            timeline.kill();
-            gsap.set(tweenRef.current, { color: "white" });
-        }
-    };
+    const { showModal, modal } = usePopup()
 
     const deleteLib = (id: number) => {
         console.log('lib:1 has been deleted;')
@@ -69,10 +31,10 @@ const LibPanel = (props: LibPanelAttr) => {
 
     return (
         <>
+            {modal}
             <div className="flex">
                 <Button
                     onClick={_ => {
-                        setOpen(false)
                         setLibOpen(true)
                     }}
                     className="inline-flex items-center justify-center gap-2 rounded-md py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[hover]:bg-white/5 data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white">
@@ -88,12 +50,19 @@ const LibPanel = (props: LibPanelAttr) => {
                                 auth(() => {
                                     setLib(lib)
                                     setLibOpen(true)
-                                    setOpen(false)
                                 })
                             }}>
                                 <a href="#" className="font-semibold text-white">
                                     <span className="absolute inset-0" />
-                                    {lib.name}
+                                    <div className="flex gap-2 items-center">
+                                        {
+                                            lib.disabled ? <FaceFrownIcon className="size-4" /> : <FaceSmileIcon className="size-4" />
+                                        }
+                                        {
+                                            lib.locked ? <EyeSlashIcon className="size-4" /> : <EyeIcon className="size-4" />
+                                        }
+                                        {lib.name}
+                                    </div>
                                 </a>
                                 <ul className="flex gap-2 text-white/50" aria-hidden="true">
                                     <li>{formatDistanceToNow(new Date(lib.creation), {
@@ -110,7 +79,7 @@ const LibPanel = (props: LibPanelAttr) => {
                             <Button
                                 title="scan"
                                 disabled={click}
-                                className="rounded-md data-[hover]:bg-white/5 p-2 py-3 disabled:cursor-not-allowed"
+                                className="group p-2 py-3 disabled:cursor-not-allowed"
                                 onClick={_ => {
                                     setClick(true)
                                     toast.info('scanning...')
@@ -124,9 +93,8 @@ const LibPanel = (props: LibPanelAttr) => {
                                 }}
                             >
                                 <MagnifyingGlassCircleIcon
-                                    style={{ color: 'white' }}
                                     className={clsx(
-                                        "size-6 transition duration-200",
+                                        "size-8 fill-white/60 group-hover:fill-white transition-all duration-200",
                                         {
                                             "animate-spin": click
                                         }
@@ -134,18 +102,22 @@ const LibPanel = (props: LibPanelAttr) => {
                             </Button>
                             <Button
                                 title="delete"
-                                className='rounded-md data-[hover]:bg-white/5 p-2 py-3'
-                                onMouseDown={handleMouseDown}
-                                onMouseUp={handleMouseUp}
-                                onMouseLeave={handleMouseUp}>
-                                <TrashIcon ref={tweenRef}
-                                    style={{ color: 'white' }}
-                                    className="size-6 transition duration-200" />
+                                className='rounded-md group p-2 py-3'
+                                onClick={_ => showModal({
+                                    title: `Delete Library`,
+                                    content:
+                                        <div className="text-sm">
+                                            <p><span>{`Do you want to `}</span><span className="text-red-400">delete</span><span>{` lib: ${lib.name}?`}</span></p>
+                                            <p>This operation can't undo.</p>
+                                        </div>,
+                                    buttons: <Button title="yes" className='rounded-md hover:bg-white/5 py-2 px-2' onClick={_ => deleteLib(lib.id)}> <span>YES</span> </Button>
+                                })}
+                            >
+                                <TrashIcon
+                                    className="size-8 fill-white/60 group-hover:fill-red-500 transition-all duration-200" />
                             </Button>
                         </div>
-                    )) : <div className="w-full flex items-center justify-center">
-                        <span> - - </span>
-                    </div>
+                    )) : <Empty text="No Library" />
                 }
             </ul>
         </>

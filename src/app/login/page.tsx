@@ -71,6 +71,8 @@ const Login = () => {
                 localStorage.setItem('expires', data.data.expires.toString())
                 setText('CLICK*TO*ENTER*')
                 setConnected(true)
+            } else {
+                setText(res.data.msg.toUpperCase().replaceAll(' ', '*') + '*')
             }
         })
     }
@@ -78,8 +80,6 @@ const Login = () => {
     return (
         <div className="w-full flex items-center justify-center">
             {aurora}
-
-
             <div className="max-w-lg h-[100vh] flex items-center justify-center min-w-lg px-4 z-10">
                 <FadeContent blur={true} duration={1000} easing="ease-out" initialOpacity={0}>
 
@@ -169,7 +169,7 @@ const Login = () => {
             <div className="mx-2 w-2px bg-white/5" />
             <div className="flex h-[100vh] items-center justify-center z-10">
                 {
-                    !connected && <FadeContent blur={true} duration={1000} easing="ease-out" initialOpacity={0}>
+                    !connected && !loading && <FadeContent blur={true} duration={1000} easing="ease-out" initialOpacity={0}>
                         <h1
                             ref={textRef}
                             className={clsx(

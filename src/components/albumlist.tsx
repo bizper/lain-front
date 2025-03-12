@@ -1,18 +1,9 @@
-import { Album, BaseAttr, Library, Player, Playlist, Song } from "@/type"
-import { auth, formatTime, isAuth } from "@/utils/kit"
+import { Album, BaseAttr, CoreMethods, Playlist, Song, VoidHandler } from "@/type"
+import { formatTime, isAuth } from "@/utils/kit"
 import { Dialog, DialogPanel, DialogTitle, Button, MenuButton, MenuItem, MenuItems, Menu } from "@headlessui/react"
-import { PlayIcon, InformationCircleIcon, PauseIcon, PlusIcon, ArrowLeftEndOnRectangleIcon, ArrowLeftStartOnRectangleIcon, Cog6ToothIcon, FaceSmileIcon, QuestionMarkCircleIcon, QueueListIcon } from "@heroicons/react/24/solid"
-import router from "next/router";
+import { PlayIcon, InformationCircleIcon, PauseIcon, PlusIcon, QueueListIcon } from "@heroicons/react/24/solid"
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import {
-    Menu as ContextMenu,
-    Item,
-    Separator,
-    Submenu,
-    useContextMenu
-} from "react-contexify";
 import "react-contexify/dist/ReactContexify.css";
-import { createPortal } from "react-dom";
 import { Empty } from "./empty";
 import { get, post } from "@/utils/net";
 import { toast } from "react-toastify";
@@ -29,8 +20,7 @@ type AlbumListAttr = BaseAttr & {
     setInfoOpen: Dispatch<SetStateAction<boolean>>
     setPlaylist: Dispatch<SetStateAction<Song[]>>
     playWholeAlbum: () => void
-    player: Player
-}
+} & CoreMethods
 
 const MENU_ID = "menu-id";
 
@@ -41,13 +31,17 @@ const AlbumList = (props: AlbumListAttr) => {
         open,
         album,
         song,
-        player,
         playlist,
+        play,
+        resume,
+        pause,
         setOpen,
         setAlbum,
         setInfoOpen,
         setPlaylist,
-        playWholeAlbum } = props
+        playWholeAlbum,
+        setCurrentIndex
+    } = props
 
     const [lists, setLists] = useState<Playlist[]>()
 
@@ -148,20 +142,24 @@ const AlbumList = (props: AlbumListAttr) => {
                                                 song && song.id === s.id && state ?
                                                     <PauseIcon className="size-6 fill-white/60 transition duration-300 group-hover:fill-white" onClick={_ => {
                                                         console.log('pause')
-                                                        player.pause()
+                                                        pause()
                                                     }} /> :
                                                     <PlayIcon className="size-6 fill-white/60 transition duration-300 group-hover:fill-white" onClick={_ => {
-                                                        if (song && song.id === s.id) player.resume()
+                                                        if (song && song.id === s.id) resume()
                                                         else {
-                                                            setPlaylist(playlist.concat(s))
-                                                            console.log("hi")
-                                                            player.play(s)
+                                                            if(playlist.includes(s)) {
+                                                                setCurrentIndex(playlist.findIndex(i => i.id === s.id))
+                                                            } else setPlaylist(playlist.concat(s))
+                                                            play(s)
                                                         }
                                                     }} />
                                             }
                                         </Button>
                                         <a className="w-full block rounded-lg py-2 px-3 transition hover:bg-white/5" href="#" onClick={_ => {
-                                            player.play(s)
+                                            if(playlist.includes(s)) {
+                                                setCurrentIndex(playlist.findIndex(i => i.id === s.id))
+                                            } else setPlaylist(playlist.concat(s))
+                                            play(s)
                                         }}>
                                             <div className="flex items-center justify-between">
                                                 <p className={'font-semibold text-white mr-4'}>{`${s.track === 0 ? index + 1 : s.track}.${s.name}`}</p>

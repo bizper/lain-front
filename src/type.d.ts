@@ -9,6 +9,7 @@ export type Library = {
     albums?: Album[]
     count: number
     locked: boolean
+    disabled: boolean
     creation: number
 }
 
@@ -34,6 +35,10 @@ export type Song = {
     samples: number
     bitsPerSample: number
     lib: string
+    lyrics?: {
+        time: number
+        content: string
+    }[]
 }
 
 export type Album = {
@@ -68,10 +73,11 @@ export interface Resp<T> {
 }
 
 export type User = {
+    id: number
     username: string
     nickname: string
     level: number
-    email: string
+    email?: string
     disabled: boolean
     creation: number
     pref: {
@@ -93,6 +99,8 @@ export type HomeAuthRes = {
     user: User
     version: string
     fastboot?: boolean
+    dailyAlbums?: Album[]
+    dailySongs?: Song[]
 }
 
 export type LoginRes = {
@@ -119,6 +127,11 @@ export type LANG = {
     [key: string]: string | LANG
 }
 
+export type PaginationRes<T> = {
+    total: number
+    rows: T[]
+}
+
 export type Page = {
 
     icon: ReactNode
@@ -127,18 +140,13 @@ export type Page = {
 
 }
 
-export type Player = {
-    soundcore: (url: string) => Howl
-    prev: () => void
-    next: () => void
-    resume: () => void
-    pause: () => void
-    play: (song: Song) => void
-}
-
-export type Core = {
-
+export type CoreMethods = {
+    play: SingleHandler<Song>
+    resume: VoidHandler
+    prev: VoidHandler
+    next: VoidHandler
+    pause: VoidHandler
 }
 
 export type VoidHandler = () => void
-
+export type SingleHandler<T> = (t: T) => void

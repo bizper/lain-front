@@ -131,7 +131,7 @@ const AlbumPage = ({ setAlbum, setOpenAlbum }: AlbumPageAttr) => {
                                         displayOverlayContent
                                         overlayContent={
                                             <div className={`m-3`} style={{ maxWidth: `${width - 25}px` }}>
-                                                <p className={`rounded-md tilted-card-demo-text backdrop-blur-2xl bg-gray-800/60 backdrop-brightness-125 truncate ...`}>
+                                                <p className={`rounded-lg tilted-card-demo-text backdrop-blur-md bg-gray-800/60 backdrop-brightness-125 truncate ...`}>
                                                     {`${a.name}`}
                                                 </p>
                                             </div>

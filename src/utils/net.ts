@@ -13,6 +13,7 @@ const get = <T, R = AxiosResponse<Resp<T>>, D = any>(resource: string, data?: D)
 }
 
 const post = <T, R = AxiosResponse<Resp<T>>, D = any>(resource: string, data?: D) => {
+    console.log(data)
     return axios.post<T, R, D>(url + resource, data, {
         headers: {
             Authorization: localStorage.getItem('token')

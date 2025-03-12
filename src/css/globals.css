@@ -41,6 +41,13 @@
     }
 }
 
+@layer utilities {
+    .slow-spin {
+        animation: spin 5s linear infinite;
+        /* 3s 一圈 */
+    }
+}
+
 body {
     color: var(--foreground);
     background: var(--background);
@@ -130,6 +137,15 @@ input[type="range"]::-webkit-slider-thumb:hover {
     color: rgb(var(--maincolor));
 }
 
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: inherit;
+    z-index: -1;
+    /* 让 canvas 继承 div 的圆角 */
+}
+
 .tilted-card-demo-text {
     text-transform: capitalize;
     color: rgb(255, 255, 255);
@@ -138,4 +154,8 @@ input[type="range"]::-webkit-slider-thumb:hover {
     font-weight: 900;
     box-shadow: rgba(6, 6, 6, 0.4) 0px 5px 30px;
     padding: 0.5rem 1em;
+}
+
+.form-title {
+    color:rgba(255, 255, 255, 0.8);
 }

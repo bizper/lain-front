@@ -7,7 +7,7 @@ type EmptyAttr = {
 
 const Empty = ({ text, icon = <NoSymbolIcon className="size-10"/> }: EmptyAttr) => {
     return (
-        <div className="mt-4 mb-4 flex flex-col items-center justify-center gap-2">
+        <div className="w-full h-full flex flex-col items-center justify-center gap-2">
             {icon}
             <p>
                 {text}

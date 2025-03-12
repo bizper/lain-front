@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useEffect, useRef, useState } from "react";
-import { Album, Library, Song, Page, Player, Transcoding } from "@/type";
-import { post, url } from "@/utils/net";
+import { Album, Library, Song, Page, HomeAuthRes, User } from "@/type";
+import { get, post, url } from "@/utils/net";
 import Image from "next/image";
 import {
     Cog6ToothIcon,
@@ -15,8 +15,7 @@ import {
     XCircleIcon,
     Bars3Icon,
     MusicalNoteIcon,
-    QueueListIcon,
-    ChevronDownIcon
+    QueueListIcon
 } from '@heroicons/react/24/solid'
 import { auth, debounce, getRandomInt, isAuth, locale } from "@/utils/kit";
 import { Bounce, toast, ToastContainer } from "react-toastify";
@@ -26,20 +25,17 @@ import { useRouter } from "next/navigation";
 import { Settings } from "@/components/settings";
 import { LibEdit } from "@/components/libedit";
 import { ControlBar } from "@/components/controlbar";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import clsx from "clsx";
 import { HomePage } from "@/pages/homepage";
 import { PlaylistPage } from "@/pages/playlistpage";
 import { AlbumPage } from "@/pages/albumpage";
 import { SongPage } from "@/pages/songpage";
 import { PopMenu } from "@/components/menu";
-import { Howl } from 'howler';
 import FadeContent from "@/components/FadeContent/FadeContent";
 import ReactDOM from "react-dom";
-import AnimatedContent from "@/components/AnimatedContent/AnimatedContent";
-import { Button } from "@headlessui/react";
-import { TiltedCard } from "@/components/tiltedcard";
 import { FullScreenPanel } from "@/components/fullplaypanel";
+import AnimatedContent from "@/components/AnimatedContent/AnimatedContent";
 
 enum PlayMode {
     LOOP,
@@ -60,9 +56,12 @@ const debouncedPost = debounce(post, 300)
 
 const Home = () => {
 
-    const [source, setSource] = useState<number>(0)
-    const [howl, setHowl] = useState<Howl>()
-    const [showPlayer, setShow] = useState(true)
+    //system
+    const [version, setVersion] = useState("")
+    const [user, setUser] = useState<User>()
+
+    //player
+    const [showPlayer, setShow] = useState(false)
     const [lib, setLib] = useState<Library>()
     const [song, setSong] = useState<Song | undefined>()
     const [state, setState] = useState<boolean>(false)
@@ -76,141 +75,112 @@ const Home = () => {
     const [album, setAlbum] = useState<Album>()
     const [openInfo, setOpenInfo] = useState(false)
     const [openLib, setOpenLib] = useState(false)
-    const [openSidebar, setOpenSidebar] = useState(false);
+    const [openSidebar, setOpenSidebar] = useState(true);
     const [index, setIndex] = useState(0)
     const [supportList, setSupportList] = useState<{ [key: string]: boolean }>()
-    const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
     const [openSongPage, setOpenSongPage] = useState(false)
 
     const router = useRouter();
 
-    const player: Player = {
-        soundcore: (url: string) => {
-            const h = new Howl({
-                src: [url],
-                autoplay: false,
-                loop: false,
-                format: ["flac", "mp4", "wma", "wav", "aac", "mp3"],
-                xhr: {
-                    headers: {
-                        Authorization: localStorage.getItem('token') || '',
-                        Custom: 'Cosplay'
-                    }
-                },
-                volume: volume,
-                onplay: () => {
-                    const id = setInterval(() => {
-                        setDuration(h.seek())
-                    }, 1000);
-                    setIntervalId(id);
-                },
-                onfade: () => {
-                    h.unload()
-                },
-                onend: () => {
-                    player.next()
+    const audioRef = useRef<HTMLAudioElement>(null)
+
+    const play = (song: Song) => {
+        console.log(`now playing: ${song.name}`)
+        setSong(song)
+        setDuration(0)
+        get<string>("/song/check/" + song.id).then(res => {
+            const data = res.data
+            if (data.code === 200) {
+                if (audioRef.current) {
+                    audioRef.current.src = url + "/play/song/" + data.data
+                    audioRef.current.play()
                 }
-            })
-            setHowl(h)
-            return h
-        },
-        play: (song: Song) => {
-            console.log(`now playing: ${song.name}`)
-            setSong(song)
+                console.log(index)
+                if (index !== 0) {
+                    console.log(index)
+                    setShow(true)
+                }
+                setState(true)
+            }
+        })
+    }
+
+    const resume = () => {
+        if (audioRef.current) {
+            audioRef.current.play()
+        }
+        setState(true)
+    }
+
+    const pause = () => {
+        if (audioRef.current) {
+            audioRef.current.pause()
+        }
+        setState(false)
+    }
+
+    const prev = () => {
+        if (duration > 20) {
+            if (audioRef.current) {
+                audioRef.current.currentTime = 0
+            }
             setDuration(0)
-            if (howl) {
-                howl.fade(volume, 0, 1000)
-                if (intervalId) clearInterval(intervalId)
-            }
-            setSource(player.soundcore(url + "/play/song/" + song.id).play())
-            if (state && !showPlayer) {
-                setShow(true)
-            }
-            setState(true)
-        },
-        resume: () => {
-            if (howl) {
-                howl.play()
-                const id = setInterval(() => {
-                    if (howl) {
-                        setDuration(howl.seek());
-                    }
-                }, 1000);
-                setIntervalId(id);
-            }
-            setState(true)
-        },
-        pause: () => {
-            if (howl) {
-                howl.pause(source)
-                if (intervalId) {
-                    clearInterval(intervalId);
-                }
-            }
-            setState(false)
-        },
-        prev: () => {
-            if (duration > 10 && howl) {
-                howl.seek(0)
-                setDuration(0)
-            }
-            if (currentIndex == 0) {
-                player.play(playlist[playlist.length - 1])
-                setCurrentIndex(playlist.length - 1)
-            } else {
-                player.play(playlist[currentIndex - 1])
-                setCurrentIndex(currentIndex - 1)
-            }
-        },
-        next: () => {
+        } else if (currentIndex == 0) {
+            play(playlist[playlist.length - 1])
+            setCurrentIndex(playlist.length - 1)
+        } else {
+            play(playlist[currentIndex - 1])
+            setCurrentIndex(currentIndex - 1)
+        }
+    }
+
+    const next = () => {
+        if (playlist.length > 0) {
             if (playMode === PlayMode.SING) {
-                if (duration > 10 && howl) {
-                    howl.seek(0)
-                    setDuration(0)
-                }
-            } else if (playMode === PlayMode.LOOP) {
+                play(playlist[currentIndex])
+            }
+            else if (playMode === PlayMode.LOOP) {
                 if (currentIndex >= playlist.length - 1) {
-                    player.play(playlist[0])
+                    play(playlist[0])
                     setCurrentIndex(0)
                 } else {
-                    player.play(playlist[currentIndex + 1])
+                    play(playlist[currentIndex + 1])
                     setCurrentIndex(currentIndex + 1)
                 }
-            } else if (playMode === PlayMode.RAND) {
+            } else {
                 const rnd = getRandomInt(0, playlist.length - 1)
-                player.play(playlist[rnd])
+                play(playlist[rnd])
                 setCurrentIndex(rnd)
             }
-
         }
     }
 
     const playWholeAlbum = () => {
         if (album) {
             setShow(true)
-            player.play(album.songs[0])
+            play(album.songs[0])
             setPlaylist(album.songs)
             setCurrentIndex(0)
         }
     }
 
     const controlBar = ReactDOM.createPortal(
-        <ControlBar song={song} playlist={playlist} showPlayer={showPlayer} volume={volume} duration={duration} setOpenSongPage={setOpenSongPage}
-            playMode={playMode} player={player} howl={howl} setVolume={(v: number) => {
+        <ControlBar song={song} setSong={setSong} playlist={playlist} showPlayer={showPlayer} volume={volume} duration={duration} setOpenSongPage={setOpenSongPage}
+            playMode={playMode} currentIndex={currentIndex} setVolume={(v: number) => {
                 setVolume(v)
                 debouncedPost('/user/updateVolume', { volume: v })
             }} setShow={setShow} setPlayMode={setPlayMode}
             setCurrentIndex={setCurrentIndex} state={state}
-            setPlaylist={setPlaylist} />,
+            setPlaylist={setPlaylist} audioRef={audioRef} play={play} pause={pause} resume={resume} prev={prev} next={next} />,
         document.body
     )
 
     const fullscreenPlayPanel = ReactDOM.createPortal(
-        song && <FullScreenPanel state={state} song={song} player={player} howl={howl} volume={volume} duration={duration}
-            setOpenSongPage={setOpenSongPage} setVolume={(v: number) => {
-                setVolume(v)
-                debouncedPost('/user/updateVolume', { volume: v })
-            }} />,
+        song && <FullScreenPanel state={state} song={song} volume={volume} duration={duration}
+        setOpenSongPage={setOpenSongPage} setVolume={(v: number) => {
+            setVolume(v)
+            debouncedPost('/user/updateVolume', { volume: v })
+        }} audioRef={audioRef} play={play} pause={pause} resume={resume} prev={prev} next={next} />,
         document.body
     )
 
@@ -229,7 +199,7 @@ const Home = () => {
                 icon: <BookOpenIcon className="size-4" />,
                 text: 'Albums',
                 onClick: () => {
-                    if (state && !showPlayer) {
+                    if (!showPlayer) {
                         setShow(true)
                     }
                 }
@@ -238,7 +208,7 @@ const Home = () => {
                 icon: <MusicalNoteIcon className="size-4" />,
                 text: 'Songs',
                 onClick: () => {
-                    if (state && !showPlayer) {
+                    if (!showPlayer) {
                         setShow(true)
                     }
                 }
@@ -247,7 +217,7 @@ const Home = () => {
                 icon: <QueueListIcon className="size-4" />,
                 text: 'Playlist',
                 onClick: () => {
-                    if (state && !showPlayer) {
+                    if (!showPlayer) {
                         setShow(true)
                     }
                 }
@@ -259,14 +229,14 @@ const Home = () => {
     };
 
     useEffect(() => {
-        if (howl) {
-            howl.volume(volume)
+        if (audioRef.current) {
+            audioRef.current.volume = volume
         }
     }, [volume])
 
     const logout = () => {
         localStorage.clear()
-        router.refresh()
+        router.push('/login')
     }
 
     const saveLib = (lib: Partial<Library>) => {
@@ -280,6 +250,24 @@ const Home = () => {
             }
         })
     }
+
+    useEffect(() => {
+        get<HomeAuthRes>('/auth/').then(res => {
+            const data = res.data
+            if (data.code === 200) {
+                if (data.data.fastboot) router.push('/fastboot')
+                else {
+                    if (data.data.user) {
+                        setUser(data.data.user)
+                        if(data.data.user.pref) {
+                            setVolume(data.data.user.pref.volume)
+                        }
+                    }
+                    setVersion(data.data.version)
+                }
+            }
+        })
+    }, [])
 
     // useEffect(() => {
     //     if (audioRef.current) {
@@ -301,52 +289,72 @@ const Home = () => {
 
     return (
         <>
+            <audio
+                ref={audioRef}
+                onEnded={_ => next()}
+                onTimeUpdate={_ => {
+                    if (audioRef.current) {
+                        setDuration(audioRef.current.currentTime)
+                    }
+                }}
+
+            />
             <FadeContent blur={true} duration={500} easing="ease-out" initialOpacity={0}>
                 <div className="main h-screen">
                     <div className="top flex justify-between items-center gap-4 transition-1">
                         <div className="logo">
                             <h1>{locale('TITLE')}</h1>
                         </div>
-                        <PopMenu className='data-[hover]:bg-gray-700' icon={<Image className="size-4 fill-white/60" src='/Settings.svg' alt="Settings" width={30} height={30} />} items={[
-                            isAuth() ? <button
-                                onClick={_ => {
-                                    auth(() => {
-                                        setOpenSetting(true)
-                                    })
-                                }}
-                                className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10">
-                                <Cog6ToothIcon className="size-4 fill-white/60" />
-                                Settings
-                                <kbd className="ml-auto font-sans text-xs text-white/50 group-data-[focus]:inline">S</kbd>
-                            </button> : null,
-                            <button className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10">
-                                <QuestionMarkCircleIcon className="size-4 fill-white/60" />
-                                Questions
-                                <kbd className="ml-auto font-sans text-xs text-white/50 group-data-[focus]:inline">Q</kbd>
-                            </button>,
-                            <button className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10">
-                                <FaceSmileIcon className="size-4 fill-white/60" />
-                                Support
-                                <kbd className="ml-auto font-sans text-xs text-white/50 group-data-[focus]:inline">U</kbd>
-                            </button>,
-                            isAuth() ? <button className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10" onClick={logout}>
-                                <ArrowLeftStartOnRectangleIcon className="size-4 fill-white/60" />
-                                Logout
-                                <kbd className="ml-auto font-sans text-xs text-white/50 group-data-[focus]:inline">L</kbd>
-                            </button> : <button className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10" onClick={_ => {
-                                router.push('/login')
-                            }}>
-                                <ArrowLeftEndOnRectangleIcon className="size-4 fill-white/60" />
-                                Login
-                                <kbd className="ml-auto font-sans text-xs text-white/50 group-data-[focus]:inline">L</kbd>
-                            </button>
-                        ]} />
+                        <div className="flex gap-4 items-center">
+                            <input placeholder="Search" className={clsx(
+                                "bg-transparent outline-none",
+                                "border-b-[1px] border-gray-700",
+                                "focus:border-gray-500 transition-color duration-300"
+                            )}
+                                style={{
+                                    textDecoration: 'none'
+                                }} type="text" />
+                            <PopMenu className='data-[hover]:bg-gray-700' icon={<Image className="size-4 fill-white/60" src='/Settings.svg' alt="Settings" width={30} height={30} />} items={[
+                                isAuth() ? <button
+                                    onClick={_ => {
+                                        auth(() => {
+                                            setOpenSetting(true)
+                                        })
+                                    }}
+                                    className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10">
+                                    <Cog6ToothIcon className="size-4 fill-white/60" />
+                                    Settings
+                                    <kbd className="ml-auto font-sans text-xs text-white/50 group-data-[focus]:inline">S</kbd>
+                                </button> : null,
+                                <button className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10">
+                                    <QuestionMarkCircleIcon className="size-4 fill-white/60" />
+                                    Questions
+                                    <kbd className="ml-auto font-sans text-xs text-white/50 group-data-[focus]:inline">Q</kbd>
+                                </button>,
+                                <button className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10">
+                                    <FaceSmileIcon className="size-4 fill-white/60" />
+                                    Support
+                                    <kbd className="ml-auto font-sans text-xs text-white/50 group-data-[focus]:inline">U</kbd>
+                                </button>,
+                                isAuth() ? <button className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10" onClick={logout}>
+                                    <ArrowLeftStartOnRectangleIcon className="size-4 fill-white/60" />
+                                    Logout
+                                    <kbd className="ml-auto font-sans text-xs text-white/50 group-data-[focus]:inline">L</kbd>
+                                </button> : <button className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10" onClick={_ => {
+                                    router.push('/login')
+                                }}>
+                                    <ArrowLeftEndOnRectangleIcon className="size-4 fill-white/60" />
+                                    Login
+                                    <kbd className="ml-auto font-sans text-xs text-white/50 group-data-[focus]:inline">L</kbd>
+                                </button>
+                            ]} />
+                        </div>
 
                     </div>
-                    <div className="ml-5 flex max-h-full">
+                    <div className="ml-5 flex h-full max-h-full">
                         {/* Sidebar */}
                         <motion.div
-                            animate={{ width: openSidebar ? 200 : 60 }}
+                            animate={{ width: openSidebar ? 150 : 60 }}
                             className="bg-white/5 rounded-md text-white  p-4 flex flex-col overflow-hidden"
                         >
                             <button onClick={toggleSidebar} className="mb-4">
@@ -374,26 +382,26 @@ const Home = () => {
                             }
                         </motion.div>
                         {
-                            index === 0 && <HomePage playlist={playlist} setPlaylist={setPlaylist} setCurrentIndex={setCurrentIndex} setVolume={setVolume}
-                                player={player} song={song} state={state} duration={duration} howl={howl} supportList={supportList} />
+                            index === 0 && <HomePage username={user ? user.nickname : 'guest'} version={version} playlist={playlist} setPlaylist={setPlaylist} setCurrentIndex={setCurrentIndex} setVolume={setVolume}
+                                song={song} state={state} duration={duration} supportList={supportList} play={play} pause={pause} resume={resume} prev={prev} next={next} audioRef={audioRef} />
                         }
                         {
                             index === 1 && <AlbumPage state={state} showPlayer={showPlayer} setAlbum={setAlbum} setOpenAlbum={setOpenAlbum} setShow={setShow} />
                         }
                         {
-                            index === 2 && <SongPage state={state} showPlayer={showPlayer} player={player} setShow={setShow} />
+                            index === 2 && <SongPage state={state} showPlayer={showPlayer} setShow={setShow} play={play} pause={pause} resume={resume} prev={prev} next={next} />
                         }
                         {
-                            index === 3 && <PlaylistPage player={player} setPlaylist={setPlaylist} setCurrentIndex={setCurrentIndex} />
+                            index === 3 && <PlaylistPage setPlaylist={setPlaylist} setCurrentIndex={setCurrentIndex} play={play} pause={pause} resume={resume} prev={prev} next={next} />
                         }
                     </div>
                     {
-                        showPlayer ? controlBar : <></>
+                        showPlayer && controlBar
                     }
                     {
                         album && <AlbumList open={openAlbum} setOpen={setOpenAlbum} playlist={playlist} state={state}
                             album={album} setAlbum={setAlbum} setCurrentIndex={setCurrentIndex} setShow={setShow}
-                            setInfoOpen={setOpenInfo} setPlaylist={setPlaylist} playWholeAlbum={playWholeAlbum} song={song} player={player} />
+                            setInfoOpen={setOpenInfo} setPlaylist={setPlaylist} playWholeAlbum={playWholeAlbum} song={song} play={play} pause={pause} resume={resume} prev={prev} next={next} />
                     }
                     <InfoEdit open={openInfo} setOpen={setOpenInfo} album={album} song={song} />
                     <LibEdit open={openLib} setOpen={setOpenLib} lib={lib} setLib={setLib} saveLib={saveLib} />

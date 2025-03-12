@@ -22,6 +22,7 @@ const LibEdit = (props: LibEditAttr) => {
     const [desc, setDescription] = useState(lib ? lib.description : '')
     const [type, setType] = useState(lib ? lib.type : 1)
     const [locked, setIsLocked] = useState(lib ? lib.locked : false)
+    const [disabled, setDisabled] = useState(lib ? lib.disabled : false)
     const [path, setPath] = useState(lib ? lib.path : '/')
 
     const [paths, setPaths] = useState<Path[]>([])
@@ -41,6 +42,7 @@ const LibEdit = (props: LibEditAttr) => {
             setDescription(lib.description)
             setType(lib.type)
             setIsLocked(lib.locked)
+            setDisabled(lib.disabled)
             setPath(lib.path)
             get<Path[]>('/auth/path', { path: lib.path }).then(res => {
                 if (res.data.code == 200) {
@@ -57,7 +59,7 @@ const LibEdit = (props: LibEditAttr) => {
     }, [lib])
 
     const submit = () => {
-        saveLib({...lib, name: name, type: type, path: path, locked: locked, description: desc})
+        saveLib({...lib, name: name, type: type, path: path, locked: locked, disabled: disabled, description: desc})
         setLib(undefined)
         get<Path[]>('/auth/path', { path: '/' }).then(res => {
             if (res.data.code == 200) {
@@ -81,7 +83,7 @@ const LibEdit = (props: LibEditAttr) => {
                 <div className="flex min-h-full items-center justify-center p-4">
                     <DialogPanel
                         transition
-                        className="w-full max-w-md rounded-xl bg-white/5 p-6 backdrop-blur-2xl duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0"
+                        className="w-full max-w-md rounded-xl bg-black/30 p-6 backdrop-blur-2xl duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0"
                     >
                         <DialogTitle as="h3" className="text-base/7 font-bold text-white">
                             {lib ? `Edit: ${lib.name}` : `Create Library`}
@@ -109,6 +111,22 @@ const LibEdit = (props: LibEditAttr) => {
                                 <Switch
                                     checked={locked}
                                     onChange={setIsLocked}
+                                    className="group relative flex h-5 w-10 cursor-pointer rounded-full bg-white/10 p-1 transition-colors duration-200 ease-in-out focus:outline-none data-[focus]:outline-1 data-[focus]:outline-white data-[checked]:bg-maincolor"
+                                >
+                                    <span
+                                        aria-hidden="true"
+                                        className="pointer-events-none inline-block size-3 translate-x-0 rounded-full bg-white ring-0 shadow-lg transition duration-200 ease-in-out group-data-[checked]:translate-x-5"
+                                    />
+                                </Switch>
+                            </Field>
+                            <Field className='flex items-center justify-between'>
+                                <div>
+                                    <Label className="text-sm/6 font-medium text-white">Disabled</Label>
+                                    <Description className="text-sm/6 text-white/50">{disabled ? 'This Library has been disabled.' : 'Running normally.'}</Description>
+                                </div>
+                                <Switch
+                                    checked={disabled}
+                                    onChange={setDisabled}
                                     className="group relative flex h-5 w-10 cursor-pointer rounded-full bg-white/10 p-1 transition-colors duration-200 ease-in-out focus:outline-none data-[focus]:outline-1 data-[focus]:outline-white data-[checked]:bg-maincolor"
                                 >
                                     <span

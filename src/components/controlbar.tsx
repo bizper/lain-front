@@ -4,10 +4,9 @@ import { MusicalNoteIcon, BackwardIcon, PauseIcon, PlayIcon, ForwardIcon, ArrowP
 import { Playlist } from "./playlist"
 import { ProgressBar } from "./progressbar"
 import { VolumeControl } from "./volume"
-import { Player, Song } from "@/type"
+import { CoreMethods, Song } from "@/type"
 import { Dispatch, ReactNode, SetStateAction, useState } from "react"
 import { url } from "@/utils/net"
-import { Howl } from 'howler';
 
 enum PlayMode {
     LOOP,
@@ -29,7 +28,8 @@ type ControlBarAttr = {
     playMode: PlayMode
     volume: number
     duration: number
-    howl?: Howl
+    currentIndex: number
+    setSong: Dispatch<SetStateAction<Song | undefined>>
     setShow: Dispatch<SetStateAction<boolean>>
     setOpenSongPage: Dispatch<SetStateAction<boolean>>
     setPlayMode: Dispatch<SetStateAction<PlayMode>>
@@ -38,8 +38,8 @@ type ControlBarAttr = {
     setPlaylist: Dispatch<SetStateAction<Song[]>>
     playlist: Song[]
     showPlayer: boolean
-    player: Player
-}
+    audioRef: React.RefObject<HTMLAudioElement | null>
+} & CoreMethods
 
 const ControlBar = (props: ControlBarAttr) => {
 
@@ -48,11 +48,17 @@ const ControlBar = (props: ControlBarAttr) => {
         song,
         showPlayer,
         volume,
-        player,
         playMode,
         duration,
         playlist,
-        howl,
+        audioRef,
+        currentIndex,
+        play,
+        resume,
+        pause,
+        prev,
+        next,
+        setSong,
         setShow,
         setPlayMode,
         setVolume,
@@ -64,8 +70,8 @@ const ControlBar = (props: ControlBarAttr) => {
 
 
     const handleProgressChange = (i: number) => {
-        if (howl) {
-            howl.seek(i * howl.duration())
+        if(audioRef.current) {
+            audioRef.current.currentTime = i * audioRef.current.duration
         }
     }
 
@@ -79,23 +85,23 @@ const ControlBar = (props: ControlBarAttr) => {
                 }
             </div>
             <div className="info h-[100px] w-1/3 p-1 flex flex-col items-center justify-center gap-2">
-                <div className="w-[80%] overflow-hidden">
+                <div className="flex justify-center w-[80%] overflow-hidden">
                     <span className={state ? "inline-block whitespace-nowrap animate-marquee" : "inline-block whitespace-nowrap"}>
                         {`${song.name} - ${song.artist}`}
                     </span>
                 </div>
                 <div className="control flex justify-even items-center gap-6">
-                    <Button onClick={player.prev} className='group'>
+                    <Button onClick={prev} className='group'>
                         <BackwardIcon className="size-6 fill-white/60 group-hover:fill-white transition-all duration-300" />
                     </Button>
                     <Button className='group'>
                         {
                             state ?
-                                <PauseIcon className="size-6 fill-white/60 group-hover:fill-white transition-all duration-300" onClick={player.pause} /> :
-                                <PlayIcon className="size-6 fill-white/60 group-hover:fill-white transition-all duration-300" onClick={player.resume} />
+                                <PauseIcon className="size-6 fill-white/60 group-hover:fill-white transition-all duration-300" onClick={pause} /> :
+                                <PlayIcon className="size-6 fill-white/60 group-hover:fill-white transition-all duration-300" onClick={resume} />
                         }
                     </Button>
-                    <Button onClick={player.next} className='group'>
+                    <Button onClick={next} className='group'>
                         <ForwardIcon className="size-6 fill-white/60 group-hover:fill-white transition-all duration-300" />
                     </Button>
                     <Button onClick={_ => {
@@ -110,22 +116,22 @@ const ControlBar = (props: ControlBarAttr) => {
                 </div>
             </div>
             <div className="progress w-1/4 flex flex-col items-center justify-center gap-1">
-                <ProgressBar progress={duration / song.duration} className="peer" onProgressChange={handleProgressChange} />
+                <ProgressBar hover2Scale={false} progress={duration / song.duration} className="peer" onProgressChange={handleProgressChange} />
                 {
-                    howl &&
+                    audioRef.current &&
                     <div className="w-full flex items-center justify-between text-gray-400">
                         <span className="text-xl">
-                            {formatTime(howl.seek())}
+                            {formatTime(duration)}
                         </span>
                         <span className="text-xl">
-                            -{formatTime(howl.duration() - howl.seek())}
+                            -{formatTime(song.duration - duration)}
                         </span>
                     </div>
                 }
 
             </div>
             <div className="additioninfo w-1/6 flex items-center justify-center gap-4">
-                <Playlist song={song} playlist={playlist} setPlaylist={setPlaylist} setCurrentIndex={setCurrentIndex} player={player} />
+                <Playlist song={song} playlist={playlist} currentIndex={currentIndex} setPlaylist={setPlaylist} setCurrentIndex={setCurrentIndex} setSong={setSong} play={play} pause={pause} next={next}/>
                 <VolumeControl volume={volume} setVolume={setVolume} />
 
             </div>
@@ -134,7 +140,7 @@ const ControlBar = (props: ControlBarAttr) => {
                     onClick={_ => {
                         setShow(false)
                         if (state) {
-                            player.pause()
+                            pause()
                         }
                     }}
                     className="inline-flex items-center gap-2 rounded-md py-1.5 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[hover]:bg-maincolor data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white">
