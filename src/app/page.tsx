@@ -62,7 +62,6 @@ const Home = () => {
 
     //player
     const [showPlayer, setShow] = useState(false)
-    const [lib, setLib] = useState<Library>()
     const [song, setSong] = useState<Song | undefined>()
     const [state, setState] = useState<boolean>(false)
     const [duration, setDuration] = useState(0)
@@ -74,7 +73,7 @@ const Home = () => {
     const [openAlbum, setOpenAlbum] = useState(false)
     const [album, setAlbum] = useState<Album>()
     const [openInfo, setOpenInfo] = useState(false)
-    const [openLib, setOpenLib] = useState(false)
+    
     const [openSidebar, setOpenSidebar] = useState(true);
     const [index, setIndex] = useState(0)
     const [supportList, setSupportList] = useState<{ [key: string]: boolean }>()
@@ -239,17 +238,7 @@ const Home = () => {
         router.push('/login')
     }
 
-    const saveLib = (lib: Partial<Library>) => {
-        setOpenLib(false)
-        post('/lib/save', {
-            ...lib
-        }).then(res => {
-            const data = res.data
-            if (data.code == 200) {
-                toast.success("success!")
-            }
-        })
-    }
+    
 
     useEffect(() => {
         get<HomeAuthRes>('/auth/').then(res => {
@@ -351,7 +340,7 @@ const Home = () => {
                         </div>
 
                     </div>
-                    <div className="ml-5 flex h-full max-h-full">
+                    <div className="ml-5 flex h-full max-h-full" style={{ paddingBottom: '150px'}}>
                         {/* Sidebar */}
                         <motion.div
                             animate={{ width: openSidebar ? 150 : 60 }}
@@ -404,8 +393,7 @@ const Home = () => {
                             setInfoOpen={setOpenInfo} setPlaylist={setPlaylist} playWholeAlbum={playWholeAlbum} song={song} play={play} pause={pause} resume={resume} prev={prev} next={next} />
                     }
                     <InfoEdit open={openInfo} setOpen={setOpenInfo} album={album} song={song} />
-                    <LibEdit open={openLib} setOpen={setOpenLib} lib={lib} setLib={setLib} saveLib={saveLib} />
-                    <Settings open={openSetting} setOpen={setOpenSetting} setLibOpen={setOpenLib} setLib={setLib} />
+                    <Settings open={openSetting} setOpen={setOpenSetting} />
                     <ToastContainer
                         position="top-center"
                         autoClose={2000}

@@ -9,10 +9,7 @@ import { toast } from "react-toastify"
 import { locale } from "@/utils/kit"
 import { AccountPanel } from "./accountspanel"
 
-type SettingAttr = {
-    setLibOpen: Dispatch<SetStateAction<boolean>>
-    setLib: Dispatch<SetStateAction<Library | undefined>>
-} & BaseAttr
+type SettingAttr = BaseAttr
 
 type SettingItem = {
     name: string
@@ -42,12 +39,27 @@ const categories: SettingItem[] = [
 
 const Settings = (props: SettingAttr) => {
 
-    const { open, setOpen, setLibOpen, setLib } = props
+    const { open, setOpen } = props
 
     const [libraries, setLibraries] = useState<Library[]>([])
     const [user, setUser] = useState<User>()
+    const [support, setSupport] = useState(false)
+    const [enabled, setEnabled] = useState(false)
+    const [FLAC, setFLAC] = useState(false)
+    const [AAC, setAAC] = useState(false)
+    const [MP3, setMP3] = useState(false)
+    const [WMA, setWMA] = useState(false)
+    const [ALAC, setALAC] = useState(false)
 
     useEffect(() => {
+        refreshInfo()
+        return () => {
+            setLibraries([])
+            setUser(undefined)
+        }
+    }, [open])
+
+    const refreshInfo = () => {
         get<Library[]>('/lib/index').then(res => {
             if (res.status === 200) {
                 const data = res.data
@@ -65,13 +77,19 @@ const Settings = (props: SettingAttr) => {
             const data = res.data
             if (data.code === 200) {
                 setUser(data.data.user)
+                setSupport(data.data.supportTranscode)
+                const setting = data.data.user.pref.enableTranscoding
+                if (setting) {
+                    setEnabled(true)
+                    if (setting.flac) setFLAC(setting.flac)
+                    if (setting.aac) setAAC(setting.aac)
+                    if (setting.mp3) setMP3(setting.mp3)
+                    if (setting.wma) setWMA(setting.wma)
+                    if (setting.alac) setALAC(setting.alac)
+                }
             }
         })
-        return () => {
-            setLibraries([])
-            setUser(undefined)
-        }
-    }, [open])
+    }
 
     return (
         <Dialog open={open} as="div" className="relative z-10 focus:outline-none " onClose={_ => setOpen(false)}>
@@ -104,18 +122,18 @@ const Settings = (props: SettingAttr) => {
                                 })}
                             </TabList>
                             <TabPanels className="mt-3">
-
                                 <TabPanel key={0} className="rounded-xl bg-white/5 p-3">
-                                    <UserPanel user={user} />
+                                    <UserPanel user={user} refreshInfo={refreshInfo}/>
                                 </TabPanel>
                                 <TabPanel key={1} className="rounded-xl bg-white/5 p-3">
-                                    <LibPanel libraries={libraries} open={open} setOpen={setOpen} setLib={setLib} setLibOpen={setLibOpen} />
+                                    <LibPanel libraries={libraries} refreshInfo={refreshInfo}/>
                                 </TabPanel>
                                 <TabPanel key={2} className="rounded-xl bg-white/5 p-3">
-                                    <TranscodingPanel />
+                                    <TranscodingPanel support={support} enabled={enabled} FLAC={FLAC} AAC={AAC} MP3={MP3} WMA={WMA} ALAC={ALAC} setEnabled={setEnabled}
+                                        setFLAC={setFLAC} setAAC={setAAC} setMP3={setMP3} setWMA={setWMA} setALAC={setALAC} refreshInfo={refreshInfo}/>
                                 </TabPanel>
                                 <TabPanel key={3} className="rounded-xl bg-white/5 p-3">
-                                    { user && <AccountPanel user={user}/> }
+                                    {user && <AccountPanel user={user} />}
                                 </TabPanel>
                             </TabPanels>
                         </TabGroup>

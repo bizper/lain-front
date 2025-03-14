@@ -24,7 +24,6 @@ const AlbumPage = ({ setAlbum, setOpenAlbum }: AlbumPageAttr) => {
     const [libraries, setLibraries] = useState<Library[]>([])
     const [selected, setSelected] = useState<Library>()
     const [width, setWidth] = useState(0)
-    const [isOverflowing, setIsOverflowing] = useState(false);
     const [numPerLine, setNumPerLine] = useState(5)
     const windowRef = useRef<HTMLDivElement>(null)
     const [observer, setObserver] = useState<ResizeObserver>()
@@ -119,7 +118,7 @@ const AlbumPage = ({ setAlbum, setOpenAlbum }: AlbumPageAttr) => {
                     </ListboxOptions>
                 </Listbox>
             }
-            <div ref={windowRef} className="w-full h-full">
+            <div ref={windowRef} className="w-full h-full overflow-auto">
                 {
                     <div className={`songs flex flex-wrap transition-all duration-300 w-full`} style={{ gap: `${gap}px`}}>
                         {

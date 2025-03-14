@@ -9,18 +9,18 @@ import { toast } from "react-toastify"
 type LibEditAttr = {
     lib?: Library
     setLib: Dispatch<SetStateAction<Library | undefined>>
-    saveLib: (lib: Partial<Library>) => void
+    refreshInfo: () => void
 } & BaseAttr
 
 const LibEdit = (props: LibEditAttr) => {
 
-    const { lib, open, setOpen, saveLib, setLib } = props
+    const { lib, open, setOpen, setLib, refreshInfo } = props
 
     const ref = useRef<HTMLElement>(null)
 
     const [name, setName] = useState(lib ? lib.name : '')
     const [desc, setDescription] = useState(lib ? lib.description : '')
-    const [type, setType] = useState(lib ? lib.type : 1)
+    const [type, setType] = useState<Library['type']>(lib ? lib.type : 1)
     const [locked, setIsLocked] = useState(lib ? lib.locked : false)
     const [disabled, setDisabled] = useState(lib ? lib.disabled : false)
     const [path, setPath] = useState(lib ? lib.path : '/')
@@ -59,8 +59,16 @@ const LibEdit = (props: LibEditAttr) => {
     }, [lib])
 
     const submit = () => {
-        saveLib({...lib, name: name, type: type, path: path, locked: locked, disabled: disabled, description: desc})
-        setLib(undefined)
+        post('/lib/save', {
+            ...lib, name: name, type: type, path: path, locked: locked, disabled: disabled, description: desc
+        }).then(res => {
+            const data = res.data
+            if (data.code == 200) {
+                toast.success("success!")
+                refreshInfo()
+            }
+        })
+        setOpen(false)
         get<Path[]>('/auth/path', { path: '/' }).then(res => {
             if (res.data.code == 200) {
                 setPaths(res.data.data)
@@ -140,7 +148,10 @@ const LibEdit = (props: LibEditAttr) => {
                                 <div className="relative">
                                     <Select
                                         onChange={_ => {
-                                            setType(parseInt(_.target.value))
+                                            const data = parseInt(_.target.value)
+                                            if(data === 1 || data === 2) {
+                                                setType(data)
+                                            }
                                         }}
                                         className={clsx(
                                             'mt-2 block w-full appearance-none rounded-lg border-none bg-white/5 py-1.5 px-3 text-sm/6 text-white',

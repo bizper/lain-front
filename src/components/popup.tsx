@@ -23,18 +23,21 @@ const Popup = ({ title = 'Modal', content = <></>, buttons, onClose }: PopupAttr
                     <div className="flex min-h-full items-center justify-center p-4">
                         <DialogPanel
                             transition
-                            className="w-full max-w-md rounded-xl bg-white/5 p-6 backdrop-blur-2xl duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0"
+                            className="w-full max-w-md rounded-xl bg-black/5 pt-6 pl-6 pr-6 pb-2 backdrop-blur-2xl duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0"
                         >
                             <DialogTitle as="h3" className="text-xl font-semibold text-white">
                                 {title}
                             </DialogTitle>
-                            <div className="mt-1 mb-1">
+                            <div className="mt-2 mb-2 p-2 rounded-md bg-white/5">
                                 {content}
                             </div>
                             {
                                 buttons &&
                                 <div className="w-full flex flex-row-reverse">
                                     {buttons}
+                                    <Button title="yes" className='rounded-md hover:bg-white/5 py-2 px-2' onClick={_ => {
+                                        setOpen(false)
+                                    }}><span>CANCEL</span></Button>
                                 </div>
                             }
                         </DialogPanel>

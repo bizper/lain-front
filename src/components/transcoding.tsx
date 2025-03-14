@@ -1,40 +1,48 @@
 import { Fieldset, Field, Switch, Label, Legend } from "@headlessui/react"
 import clsx from "clsx"
-import { get, post } from "@/utils/net"
-import { useEffect, useState } from "react"
-import { User, Transcoding } from "@/type"
+import { post } from "@/utils/net"
+import { Dispatch, SetStateAction } from "react"
+import { Transcoding } from "@/type"
 
-const TranscodingPanel = () => {
+type TranscodingPanelAttr = {
+    support: boolean
+    enabled: boolean
+    FLAC: boolean
+    AAC: boolean
+    MP3: boolean
+    WMA: boolean
+    ALAC: boolean
+    setEnabled: Dispatch<SetStateAction<boolean>>
+    setFLAC: Dispatch<SetStateAction<boolean>>
+    setAAC: Dispatch<SetStateAction<boolean>>
+    setMP3: Dispatch<SetStateAction<boolean>>
+    setWMA: Dispatch<SetStateAction<boolean>>
+    setALAC: Dispatch<SetStateAction<boolean>>
+    refreshInfo: () => void
+}
 
-    const [support, setSupport] = useState(false)
-    const [enabled, setEnabled] = useState(false)
-    const [FLAC, setFLAC] = useState(false)
-    const [AAC, setAAC] = useState(false)
-    const [MP3, setMP3] = useState(false)
-    const [WMA, setWMA] = useState(false)
-    const [ALAC, setALAC] = useState(false)
+const TranscodingPanel = (props: TranscodingPanelAttr) => {
 
-    useEffect(() => {
-        get<{
-            user: User
-            supportTranscode: boolean
-        }>('/user/me').then(res => {
-            const data = res.data
-            setSupport(data.data.supportTranscode)
-            const setting = data.data.user.pref.enableTranscoding
-            if (setting) {
-                setEnabled(true)
-                if (setting.flac) setFLAC(setting.flac)
-                if (setting.aac) setAAC(setting.aac)
-                if (setting.mp3) setMP3(setting.mp3)
-                if (setting.wma) setWMA(setting.wma)
-                if (setting.alac) setALAC(setting.alac)
-            }
-        })
-    }, [])
+    const { 
+        support, 
+        enabled, 
+        FLAC, 
+        AAC, 
+        MP3, 
+        WMA, 
+        ALAC,
+        setEnabled,
+        setFLAC,
+        setAAC,
+        setMP3,
+        setWMA,
+        setALAC,
+        refreshInfo
+    } = props
 
     const updateSetting = (param: (Partial<Transcoding> & { enableTranscoding: boolean }) | { enableTranscoding: boolean }) => {
-        post('/user/updateTranscoding', { ...param })
+        post('/user/updateTranscoding', { ...param }).then(r => refreshInfo())
+        
     }
 
     return (

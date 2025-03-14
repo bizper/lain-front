@@ -1,4 +1,4 @@
-import { BaseAttr, Library } from "@/type"
+import { Library } from "@/type"
 import { auth } from "@/utils/kit"
 import { post } from "@/utils/net"
 import { Button } from "@headlessui/react"
@@ -6,36 +6,39 @@ import { PlusCircleIcon, MagnifyingGlassCircleIcon, TrashIcon, FaceSmileIcon, Fa
 import clsx from "clsx"
 import { formatDistanceToNow } from "date-fns"
 import { enUS } from "date-fns/locale"
-import { Dispatch, SetStateAction, useState } from "react"
+import { useState } from "react"
 import { toast } from "react-toastify"
 import { Empty } from "./empty"
 import { usePopup } from "./popup"
+import { LibEdit } from "./libedit"
 
 type LibPanelAttr = {
     libraries: Library[]
-    setLibOpen: Dispatch<SetStateAction<boolean>>
-    setLib: Dispatch<SetStateAction<Library | undefined>>
-} & BaseAttr
+    refreshInfo: () => void
+}
 
 const LibPanel = (props: LibPanelAttr) => {
 
-    const [click, setClick] = useState(false)
+    const { libraries, refreshInfo } = props
 
-    const { libraries, setLibOpen, setLib } = props
-
+    const [openLib, setOpenLib] = useState(false)
+    const [lib, setLib] = useState<Library>()
     const { showModal, modal } = usePopup()
 
     const deleteLib = (id: number) => {
-        console.log('lib:1 has been deleted;')
+
+        console.log(`lib:${id} has been deleted;`)
+        refreshInfo()
     }
 
     return (
         <>
             {modal}
+            <LibEdit open={openLib} setOpen={setOpenLib} lib={lib} setLib={setLib} refreshInfo={refreshInfo}/>
             <div className="flex">
                 <Button
                     onClick={_ => {
-                        setLibOpen(true)
+                        setOpenLib(true)
                     }}
                     className="inline-flex items-center justify-center gap-2 rounded-md py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[hover]:bg-white/5 data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white">
                     <PlusCircleIcon className="size-4 fill-white/60" />{'Lib'}
@@ -49,7 +52,7 @@ const LibPanel = (props: LibPanelAttr) => {
                             <li className="relative w-full rounded-md p-3 text-sm/6 transition hover:bg-white/5" onClick={_ => {
                                 auth(() => {
                                     setLib(lib)
-                                    setLibOpen(true)
+                                    setOpenLib(true)
                                 })
                             }}>
                                 <a href="#" className="font-semibold text-white">
@@ -78,26 +81,22 @@ const LibPanel = (props: LibPanelAttr) => {
                             </li>
                             <Button
                                 title="scan"
-                                disabled={click}
+                                disabled={lib.status === 1}
                                 className="group p-2 py-3 disabled:cursor-not-allowed"
                                 onClick={_ => {
-                                    setClick(true)
-                                    toast.info('scanning...')
                                     post('/lib/scan', { id: lib.id }).then(res => {
                                         const data = res.data
                                         if (data.code == 200) {
-                                            setClick(false)
-                                            toast.success("scan completed!")
+                                            toast.success('Added to task queue.')
+                                            refreshInfo()
                                         }
                                     })
+                                    refreshInfo()
                                 }}
                             >
                                 <MagnifyingGlassCircleIcon
                                     className={clsx(
-                                        "size-8 fill-white/60 group-hover:fill-white transition-all duration-200",
-                                        {
-                                            "animate-spin": click
-                                        }
+                                        "size-8 fill-white/60 group-hover:fill-white transition-all duration-200"
                                     )} />
                             </Button>
                             <Button

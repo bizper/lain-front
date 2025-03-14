@@ -10,11 +10,12 @@ type UserEditAttr = {
     open: boolean
     setOpen: Dispatch<SetStateAction<boolean>>
     withPassword?: boolean
+    refreshInfo?: () => void
 }
 
 const UserEdit = (props: UserEditAttr) => {
 
-    const { open, setOpen, user, withPassword } = props
+    const { open, setOpen, user, withPassword, refreshInfo } = props
 
     const [username, setUsername] = useState(user ? user.username : '')
     const [nickname, setNickname] = useState(user ? user.nickname : '')
@@ -29,7 +30,7 @@ const UserEdit = (props: UserEditAttr) => {
             return
         }
         post<User>('/user/save', { ...user, username: username, nickname: nickname, email: email, disabled: disabled, password: password }).then(res => {
-
+            if(refreshInfo) refreshInfo()
             console.log(res.data)
         })
     }
@@ -84,8 +85,9 @@ const UserEdit = (props: UserEditAttr) => {
                                 <Input
                                     defaultValue={nickname}
                                     onChange={e => setNickname(e.target.value)}
+                                    disabled={user ? user.level === 0 : false}
                                     className={clsx(
-                                        'mt-1 block w-full rounded-lg border-none bg-white/5 py-1.5 px-3 text-sm/6 text-white',
+                                        'mt-1 block w-full rounded-lg border-none bg-white/5 py-1.5 px-3 text-sm/6 text-white disabled:cursor-not-allowed',
                                         'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-white/25'
                                     )}
                                 />
@@ -105,12 +107,17 @@ const UserEdit = (props: UserEditAttr) => {
                             <Field className='mt-1 flex items-center justify-between'>
                                 <div>
                                     <Label className="text-sm/6 font-medium text-white">Disabled</Label>
-                                    <Description className="text-sm/6 text-white/50">{disabled ? 'This user has been banned' : 'This user running normally.'}</Description>
+                                    <Description className="text-sm/6 text-white/50">{disabled ? 'This user has been banned' : 'This user is running normally.'}</Description>
                                 </div>
                                 <Switch
                                     checked={disabled}
                                     onChange={setDisabled}
-                                    className="group relative flex h-5 w-10 cursor-pointer rounded-full bg-white/10 p-1 transition-colors duration-200 ease-in-out focus:outline-none data-[focus]:outline-1 data-[focus]:outline-white data-[checked]:bg-maincolor"
+                                    disabled={user ? user.level === 0 : false}
+                                    className={clsx(
+                                        "group relative flex h-5 w-10 cursor-pointer rounded-full bg-white/10 p-1 transition-colors",
+                                        "duration-200 ease-in-out focus:outline-none data-[focus]:outline-1 data-[focus]:outline-white data-[checked]:bg-maincolor",
+                                        "disabled:cursor-not-allowed"
+                                    )}
                                 >
                                     <span
                                         aria-hidden="true"

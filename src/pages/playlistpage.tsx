@@ -30,7 +30,7 @@ const PlaylistPage = ({
     const [songPage, setSongPage] = useState(1)
 
     const playWholeList = () => {
-        if (list && songs) {
+        if (list && songs && songs.length > 0) {
             play(songs[0])
             setPlaylist(songs)
             setCurrentIndex(0)

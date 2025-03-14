@@ -12,24 +12,27 @@ import { UserEdit } from "./useredit"
 
 type UserPanelAttr = {
     user?: User
+    refreshInfo: () => void
 }
 
-const UserPanel = ({ user }: UserPanelAttr) => {
+const UserPanel = ({ user, refreshInfo }: UserPanelAttr) => {
 
     const [open, setOpen] = useState(false)
 
     return (
         <>
-            <UserEdit open={open} setOpen={setOpen} user={user} withPassword/>
+            <UserEdit open={open} setOpen={setOpen} user={user} refreshInfo={refreshInfo} withPassword />
             {
                 user && <div className="flex flex-col justify-center" key={user.username}>
                     <div className="info flex flex-col">
                         {
                             <div className="flex gap-2">
                                 <h1 className="text-3xl text-white">{`${user.nickname}`}</h1>
-                                <Button className='group' onClick={_ => setOpen(true)}>
-                                    <PencilSquareIcon className="size-6 fill-white/70 group-hover:fill-white transition-all duration-300" />
-                                </Button>
+                                {
+                                    <Button className='group disabled:cursor-not-allowed' onClick={_ => setOpen(true)}>
+                                        <PencilSquareIcon className="size-6 fill-white/70 group-disabled:fill-white/70 group-hover:fill-white transition-all duration-300" />
+                                    </Button>
+                                }
                             </div>
                         }
                         <div className="my-2 h-px bg-white/5" />

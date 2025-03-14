@@ -3,7 +3,8 @@ export type Library = {
     name: string
     description: string
     path: string
-    type: number
+    type: 1 | 2
+    status: 0 | 1
     belongs: number
     songs?: Song[]
     albums?: Album[]

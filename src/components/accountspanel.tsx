@@ -1,6 +1,6 @@
 import { PaginationRes, User } from "@/type"
 import { auth } from "@/utils/kit"
-import { get } from "@/utils/net"
+import { get, post } from "@/utils/net"
 import { Button } from "@headlessui/react"
 import { PlusCircleIcon, TrashIcon, FaceFrownIcon, FaceSmileIcon, WrenchIcon } from "@heroicons/react/24/solid"
 import { formatDistanceToNow } from "date-fns"
@@ -9,6 +9,7 @@ import { useEffect, useState } from "react"
 import { Pagination } from "./pagination"
 import { UserEdit } from "./useredit"
 import { usePopup } from "./popup"
+import { toast } from "react-toastify"
 
 type UserPanelAttr = {
     user: User
@@ -16,7 +17,7 @@ type UserPanelAttr = {
 
 const AccountPanel = ({ user }: UserPanelAttr) => {
 
-    const [open, setOpen] = useState(false)
+    const [open, setOpenUserEdit] = useState(false)
 
     const [selected, setSelected] = useState<User>()
     const [users, setUsers] = useState<User[]>([])
@@ -42,20 +43,28 @@ const AccountPanel = ({ user }: UserPanelAttr) => {
     }, [page])
 
     const deleteUser = (id: number) => {
-        
+
+    }
+
+    const resetUser = (id: number) => {
+        post<string>('/user/reset', { id: id }).then(res => {
+            if(res.data.code === 200) {
+                toast.success('reset successfully.')
+            }
+        })
     }
 
     if (users.length <= 0) return null
 
     return (
         <div>
-            <UserEdit open={open} setOpen={setOpen} user={selected} />
+            <UserEdit open={open} setOpen={setOpenUserEdit} user={selected} />
             <div>
                 <div className="flex">
                     <Button
                         onClick={_ => {
                             setSelected(undefined)
-                            setOpen(true)
+                            setOpenUserEdit(true)
                         }}
                         className="inline-flex items-center justify-center gap-2 rounded-md py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[hover]:bg-white/5 data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white">
                         <PlusCircleIcon className="size-4 fill-white/60" />{'User'}
@@ -71,7 +80,7 @@ const AccountPanel = ({ user }: UserPanelAttr) => {
                                 auth(() => {
                                     if (u.level !== 0) {
                                         setSelected(u)
-                                        setOpen(true)
+                                        setOpenUserEdit(true)
                                     }
                                 })
                             }}>
@@ -104,6 +113,17 @@ const AccountPanel = ({ user }: UserPanelAttr) => {
                                 <Button
                                     title="reset"
                                     className='rounded-md group p-2 py-3'
+                                    onClick={_ => showModal({
+                                        title: `Reset User`,
+                                        content:
+                                            <div className="text-sm">
+                                                <p><span>{`Do you want to `}</span><span className="text-red-400">reset</span><span>{` user '${u.username}' `}</span><span>{` password to 'lain'`}</span></p>
+                                                <p>This operation can't undo.</p>
+                                            </div>,
+                                        buttons: <Button title="yes" className='rounded-md hover:bg-white/5 py-2 px-2' onClick={_ => {
+                                            resetUser(u.id)
+                                        }}> <span>YES</span> </Button>
+                                    })}
                                 >
                                     <WrenchIcon
                                         className="size-8 fill-white/60 group-hover:fill-white transition-all duration-200" />
