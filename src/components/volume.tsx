@@ -25,7 +25,7 @@ const VolumeControl = ({ volume, setVolume }: VolumeAttr) => {
                     to: "top",
                     gap: '20px'
                 }}
-                className="rounded-xl bg-black/5 backdrop-blur-3xl text-sm/6 transition duration-300 ease-in-out [--anchor-gap:var(--spacing-5)] data-[closed]:-translate-y-1 data-[closed]:opacity-0"
+                className="border-[1px] border-white/10 rounded-xl bg-black/5 backdrop-blur-3xl text-sm/6 transition duration-300 ease-in-out [--anchor-gap:var(--spacing-5)] data-[closed]:-translate-y-1 data-[closed]:opacity-0"
             >
                 <div className="h-[70px] w-60 flex flex-col gap-2 items-center justify-center" >
                     <ElasticSlider

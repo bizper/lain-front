@@ -51,7 +51,7 @@ export type Album = {
     songs: Song[]
     count: number
     duration: number
-    lib: string
+    lib: Library
 }
 
 export type Playlist = {
@@ -108,6 +108,11 @@ export type LoginRes = {
     user: User
     token: string
     expires: number
+}
+
+export type PlaybackRes = {
+    playbackSecret: string
+    needTranscode: boolean
 }
 
 export type BaseAttr = {

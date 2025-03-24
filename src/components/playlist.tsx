@@ -34,7 +34,7 @@ const Playlist = (props: PlaylistAttr) => {
                     to: "top",
                     gap: '20px'
                 }}
-                className="w-96 scrollbar-hide divide-y backdrop-blur-3xl divide-white/5 rounded-xl bg-black/30 text-sm/6 transition duration-200 ease-in-out [--anchor-gap:var(--spacing-5)] data-[closed]:-translate-y-1 data-[closed]:opacity-0"
+                className="border-[1px] border-white/10 w-96 scrollbar-hide divide-y backdrop-blur-3xl divide-white/5 rounded-xl bg-black/30 text-sm/6 transition duration-200 ease-in-out [--anchor-gap:var(--spacing-5)] data-[closed]:-translate-y-1 data-[closed]:opacity-0"
             >
                 <div className="p-3">
                     {
@@ -53,8 +53,8 @@ const Playlist = (props: PlaylistAttr) => {
                                         <p className="text-white/50">{`${i.album} - ${i.artist}`}</p>
                                     </a>
                                     <Button
-                                        title="scan"
-                                        className="rounded-md data-[hover]:bg-white/5 p-2 py-3 disabled:cursor-not-allowed"
+                                        title="delete"
+                                        className="rounded-md p-2 py-3 disabled:cursor-not-allowed"
                                         onClick={_ => {
                                             if (playlist.length === 1) {
                                                 setPlaylist([])
@@ -82,14 +82,14 @@ const Playlist = (props: PlaylistAttr) => {
                     {
                         playlist && playlist.length > 0 &&
                         <div className="flex p-2 items-center justify-between">
-                            <Button className="rounded-lg px-3 py-2 hover:bg-white/5 text-white/50 hover:text-white transition-all duration-300" onClick={_ => {
+                            <Button className="rounded-lg px-3 py-2 text-white/50 hover:text-white transition-all duration-300" onClick={_ => {
                                 post('/list/create', {
                                     name: 'Playlist 1',
                                     description: 'for test',
                                     songs: playlist.map(i => i.id)
                                 })
                             }}>Save As</Button>
-                            <Button className="rounded-lg px-3 py-2 hover:bg-white/5 text-red-200 hover:text-red-500 transition-all duration-300" onClick={_ => {
+                            <Button className="rounded-lg px-3 py-2 text-red-200 hover:text-red-500 transition-all duration-300" onClick={_ => {
                                 setPlaylist([])
                                 setSong(undefined)
                                 pause()

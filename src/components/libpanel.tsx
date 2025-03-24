@@ -1,6 +1,6 @@
 import { Library } from "@/type"
 import { auth } from "@/utils/kit"
-import { post } from "@/utils/net"
+import { get, post } from "@/utils/net"
 import { Button } from "@headlessui/react"
 import { PlusCircleIcon, MagnifyingGlassCircleIcon, TrashIcon, FaceSmileIcon, FaceFrownIcon, EyeSlashIcon, EyeIcon } from "@heroicons/react/24/solid"
 import clsx from "clsx"
@@ -84,14 +84,13 @@ const LibPanel = (props: LibPanelAttr) => {
                                 disabled={lib.status === 1}
                                 className="group p-2 py-3 disabled:cursor-not-allowed"
                                 onClick={_ => {
-                                    post('/lib/scan', { id: lib.id }).then(res => {
+                                    post<string>('/lib/scan', { id: lib.id }).then(res => {
                                         const data = res.data
                                         if (data.code == 200) {
                                             toast.success('Added to task queue.')
-                                            refreshInfo()
+                                            localStorage.setItem('name', data.data)
                                         }
                                     })
-                                    refreshInfo()
                                 }}
                             >
                                 <MagnifyingGlassCircleIcon
@@ -107,7 +106,7 @@ const LibPanel = (props: LibPanelAttr) => {
                                     content:
                                         <div className="text-sm">
                                             <p><span>{`Do you want to `}</span><span className="text-red-400">delete</span><span>{` lib: ${lib.name}?`}</span></p>
-                                            <p>This operation can't undo.</p>
+                                            <p>This operation can&apos;t undo.</p>
                                         </div>,
                                     buttons: <Button title="yes" className='rounded-md hover:bg-white/5 py-2 px-2' onClick={_ => deleteLib(lib.id)}> <span>YES</span> </Button>
                                 })}

@@ -1,4 +1,4 @@
-import { Album, BaseAttr, CoreMethods, Playlist, Song, VoidHandler } from "@/type"
+import { Album, BaseAttr, CoreMethods, Playlist, Song, User, VoidHandler } from "@/type"
 import { formatTime, isAuth } from "@/utils/kit"
 import { Dialog, DialogPanel, DialogTitle, Button, MenuButton, MenuItem, MenuItems, Menu } from "@headlessui/react"
 import { PlayIcon, InformationCircleIcon, PauseIcon, PlusIcon, QueueListIcon } from "@heroicons/react/24/solid"
@@ -14,6 +14,7 @@ type AlbumListAttr = BaseAttr & {
     playlist: Song[]
     song?: Song
     state: boolean
+    user?: User
     setAlbum: Dispatch<SetStateAction<Album | undefined>>
     setCurrentIndex: Dispatch<SetStateAction<number>>
     setShow: Dispatch<SetStateAction<boolean>>
@@ -21,8 +22,6 @@ type AlbumListAttr = BaseAttr & {
     setPlaylist: Dispatch<SetStateAction<Song[]>>
     playWholeAlbum: () => void
 } & CoreMethods
-
-const MENU_ID = "menu-id";
 
 const AlbumList = (props: AlbumListAttr) => {
 
@@ -32,6 +31,7 @@ const AlbumList = (props: AlbumListAttr) => {
         album,
         song,
         playlist,
+        user,
         play,
         resume,
         pause,
@@ -72,7 +72,7 @@ const AlbumList = (props: AlbumListAttr) => {
                             transition
                             className={clsx(
                                 "duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0 shadow-[5px_10px_10px_rgba(0,0,0,0.2)]",
-                                "w-full max-w-5xl overflow-auto max-h-[70vh] rounded-xl bg-black/30 p-6 backdrop-blur-2xl scrollbar-hide"
+                                "w-full max-w-5xl overflow-auto max-h-[70vh] rounded-xl bg-black/30 p-6 backdrop-blur-2xl scrollbar-hide border-[1px] border-white/5"
                             )}
                         >
                             <DialogTitle as="h3" className="text-base/7 font-medium text-white mb-2">
@@ -82,7 +82,7 @@ const AlbumList = (props: AlbumListAttr) => {
                                             {album.name}
                                         </div>
                                         <div className='text-white/60 text-base'>
-                                            {`${album.artist} · ${album.year} · ${album.lib}`}
+                                            {`${album.artist} · ${album.year} · ${album.lib.name}`}
                                         </div>
                                     </div>
                                     <div className="text-base/8  text-white/50">
@@ -123,7 +123,7 @@ const AlbumList = (props: AlbumListAttr) => {
                                         }
                                     </div>
                                     {
-                                        isAuth() && <Button onClick={_ => {
+                                        isAuth() && user && album.lib.belongs === user.id && <Button onClick={_ => {
                                             setOpen(false)
                                             setAlbum(album)
                                             setInfoOpen(true)

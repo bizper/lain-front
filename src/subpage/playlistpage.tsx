@@ -119,11 +119,11 @@ const PlaylistPage = ({
                                         <PlayIcon className="size-10 fill-white/60 transition duration-300 group-hover:fill-white" />
                                     </Button>
                                     <PopMenu className="group" icon={<EllipsisHorizontalIcon className="size-10 fill-white/60 transition duration-300 group-hover:fill-white" />} items={[
-                                        <button className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10">
+                                        <button key={0} className="group flex w-full items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10">
                                             <ArrowPathIcon className="size-4 fill-white/60" />
                                             Sync
                                         </button>,
-                                        <button className="group flex w-full text-red-500 items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10">
+                                        <button key={1} className="group flex w-full text-red-500 items-center gap-2 rounded-lg py-1.5 px-3 data-[focus]:bg-white/10">
                                             <TrashIcon className="size-4 fill-red-500" />
                                             Delete
                                         </button>,

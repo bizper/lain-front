@@ -21,7 +21,6 @@ const Pagination = ({ total, perpage, onChange }: PaginationAttr) => {
         const pages = [];
         const maxVisiblePages = 5;
 
-        // 始终显示第一页
         if (currentPage > maxVisiblePages + 2) {
             pages.push(1);
             pages.push('...');

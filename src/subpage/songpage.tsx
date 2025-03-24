@@ -15,16 +15,7 @@ type SongPageAttr = {
     setShow: Dispatch<SetStateAction<boolean>>
 } & CoreMethods
 
-const SongPage = ({ 
-    play,
-    resume,
-    pause,
-    prev,
-    next, 
-    state, 
-    showPlayer, 
-    setShow 
-}: SongPageAttr) => {
+const SongPage = ({ play }: SongPageAttr) => {
 
     const [libraries, setLibraries] = useState<Library[]>([])
     const [selected, setSelected] = useState<Library>()

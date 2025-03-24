@@ -118,7 +118,7 @@ const AccountPanel = ({ user }: UserPanelAttr) => {
                                         content:
                                             <div className="text-sm">
                                                 <p><span>{`Do you want to `}</span><span className="text-red-400">reset</span><span>{` user '${u.username}' `}</span><span>{` password to 'lain'`}</span></p>
-                                                <p>This operation can't undo.</p>
+                                                <p>This operation can&apos;t undo.</p>
                                             </div>,
                                         buttons: <Button title="yes" className='rounded-md hover:bg-white/5 py-2 px-2' onClick={_ => {
                                             resetUser(u.id)
@@ -138,7 +138,7 @@ const AccountPanel = ({ user }: UserPanelAttr) => {
                                         content:
                                             <div className="text-sm">
                                                 <p><span>{`Do you want to `}</span><span className="text-red-400">delete</span><span>{` user: ${u.username}?`}</span></p>
-                                                <p>This operation can't undo.</p>
+                                                <p>This operation can&apos;t undo.</p>
                                             </div>,
                                         buttons: <Button title="yes" className='rounded-md hover:bg-white/5 py-2 px-2' onClick={_ => deleteUser(u.id)}> <span>YES</span> </Button>
                                     })}

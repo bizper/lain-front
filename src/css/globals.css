@@ -137,7 +137,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
     color: rgb(var(--maincolor));
 }
 
-canvas {
+.station canvas {
     position: absolute;
     top: 0;
     left: 0;

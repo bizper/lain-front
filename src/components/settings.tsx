@@ -1,9 +1,11 @@
+'use client';
+
 import { BaseAttr, Library, User } from "@/type"
 import { Dialog, DialogPanel, DialogTitle, Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react"
 import { TranscodingPanel } from "./transcoding"
 import { UserPanel } from "./userpanel"
 import { LibPanel } from "./libpanel"
-import { Dispatch, SetStateAction, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { get } from "@/utils/net"
 import { toast } from "react-toastify"
 import { locale } from "@/utils/kit"
@@ -14,7 +16,6 @@ type SettingAttr = BaseAttr
 type SettingItem = {
     name: string
     key: number
-    filter?: (user?: User) => boolean
 }
 
 const categories: SettingItem[] = [
@@ -32,9 +33,8 @@ const categories: SettingItem[] = [
     },
     {
         name: 'Accounts',
-        key: 3,
-        filter: (user) => user ? user.level === 0 : false
-    },
+        key: 3
+    }
 ]
 
 const Settings = (props: SettingAttr) => {
@@ -57,7 +57,7 @@ const Settings = (props: SettingAttr) => {
             setLibraries([])
             setUser(undefined)
         }
-    }, [open])
+    }, [])
 
     const refreshInfo = () => {
         get<Library[]>('/lib/index').then(res => {
@@ -97,22 +97,14 @@ const Settings = (props: SettingAttr) => {
                 <div className="flex min-h-full items-center justify-center p-4">
                     <DialogPanel
                         transition
-                        className="w-full max-w-2xl rounded-xl transition-all duration-300 bg-black/30 p-6 backdrop-blur-2xl ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0 shadow-[5px_10px_10px_rgba(0,0,0,0.2)]"
+                        className="border-[1px] border-white/5 w-full max-w-2xl rounded-xl transition-all duration-300 bg-black/30 p-6 backdrop-blur-2xl ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0 shadow-[5px_10px_10px_rgba(0,0,0,0.2)]"
                     >
                         <DialogTitle as="h3" className="text-base/7 font-bold text-white mb-2">
                             {locale("SETTING.NAME")}
                         </DialogTitle>
                         <TabGroup>
                             <TabList className="flex gap-4">
-                                {categories.map(({ name, key, filter }) => {
-                                    if (filter) {
-                                        return filter(user) ? <Tab
-                                            key={key}
-                                            className="rounded-full py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"
-                                        >
-                                            {name}
-                                        </Tab> : null
-                                    }
+                                {categories.length > 0 && categories.map(({ name, key }) => {
                                     return <Tab
                                         key={key}
                                         className="rounded-full py-1 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[selected]:bg-white/10 data-[hover]:bg-white/5 data-[selected]:data-[hover]:bg-white/10 data-[focus]:outline-1 data-[focus]:outline-white"
@@ -144,4 +136,4 @@ const Settings = (props: SettingAttr) => {
     )
 }
 
-export { Settings }
+export default Settings

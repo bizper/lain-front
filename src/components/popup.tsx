@@ -23,7 +23,7 @@ const Popup = ({ title = 'Modal', content = <></>, buttons, onClose }: PopupAttr
                     <div className="flex min-h-full items-center justify-center p-4">
                         <DialogPanel
                             transition
-                            className="w-full max-w-md rounded-xl bg-black/5 pt-6 pl-6 pr-6 pb-2 backdrop-blur-2xl duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0"
+                            className="w-full max-w-md rounded-xl bg-black/5 pt-6 pl-6 pr-6 pb-2 backdrop-blur-2xl duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0 border-[1px] border-white/5"
                         >
                             <DialogTitle as="h3" className="text-xl font-semibold text-white">
                                 {title}
@@ -37,6 +37,7 @@ const Popup = ({ title = 'Modal', content = <></>, buttons, onClose }: PopupAttr
                                     {buttons}
                                     <Button title="yes" className='rounded-md hover:bg-white/5 py-2 px-2' onClick={_ => {
                                         setOpen(false)
+                                        if (onClose) onClose()
                                     }}><span>CANCEL</span></Button>
                                 </div>
                             }
