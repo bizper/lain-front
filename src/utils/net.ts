@@ -1,7 +1,7 @@
 import { Resp } from "@/type"
 import axios, { AxiosResponse } from "axios"
 
-const url = 'http://localhost:8080'
+const url = typeof window !== 'undefined' ? "http://" + window.location.hostname + ":9876" : 'http://localhost:9876'
 
 const get = <T, R = AxiosResponse<Resp<T>>, D = any>(resource: string, data?: D) => {
     return axios.get<T, R, D>(url + resource, {
