@@ -99,9 +99,7 @@ const HomePage = ({ username, version, state, song, duration, playlist, setPlayl
     }
 
     return (
-        <div className={clsx(
-            "flex-1 pl-6 pr-6 overflow-hidden"
-        )}>
+        <div className="flex-1 pl-6 pr-6 w-[1000px]">
 
             <div className="h-[128px] rounded-md w-full bg-white/5 p-4 flex items-center justify-between">
 

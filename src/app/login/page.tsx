@@ -16,6 +16,7 @@ import Aurora from "@/components/Aurora/Aurora"
 import { Loading } from "@/components/loading"
 import FadeContent from "@/components/FadeContent/FadeContent"
 import ReactDOM from "react-dom"
+import md5 from 'md5'
 
 const Login = () => {
 
@@ -64,7 +65,7 @@ const Login = () => {
             return
         }
         setLoading(true)
-        post<LoginRes>('/auth/login', { username: username, password: password }).then(res => {
+        post<LoginRes>('/auth/login', { username: username, password: md5(password), timestamp: Date.now() }).then(res => {
             const data = res.data
             if (data.code == 200) {
                 localStorage.setItem('token', data.data.token)
@@ -86,6 +87,9 @@ const Login = () => {
                     {
                         loading ? <Loading isLoading text={text} onClick={_ => {
                             if (connected) router.push('/')
+                            else {
+                                setLoading(false)
+                            }
                         }} /> : <Fieldset className="ml-2 space-y-6 rounded-xl bg-transparent p-6 sm:p-10">
                             <Legend className=" font-bold text-white text-4xl">Connect to
                                 {/* <h1 className="text-4xl ml-2 font-nova"

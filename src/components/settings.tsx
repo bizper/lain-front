@@ -78,15 +78,18 @@ const Settings = (props: SettingAttr) => {
             if (data.code === 200) {
                 setUser(data.data.user)
                 setSupport(data.data.supportTranscode)
-                const setting = data.data.user.pref.enableTranscoding
-                if (setting) {
-                    setEnabled(true)
-                    if (setting.flac) setFLAC(setting.flac)
-                    if (setting.aac) setAAC(setting.aac)
-                    if (setting.mp3) setMP3(setting.mp3)
-                    if (setting.wma) setWMA(setting.wma)
-                    if (setting.alac) setALAC(setting.alac)
+                if(data.data.user.pref) {
+                    const setting = data.data.user.pref.enableTranscoding
+                    if (setting) {
+                        setEnabled(true)
+                        if (setting.flac) setFLAC(setting.flac)
+                        if (setting.aac) setAAC(setting.aac)
+                        if (setting.mp3) setMP3(setting.mp3)
+                        if (setting.wma) setWMA(setting.wma)
+                        if (setting.alac) setALAC(setting.alac)
+                    }
                 }
+                
             }
         })
     }

@@ -7,6 +7,7 @@ import { VolumeControl } from "./volume"
 import { CoreMethods, Song } from "@/type"
 import { Dispatch, ReactNode, SetStateAction, useState } from "react"
 import { url } from "@/utils/net"
+import clsx from "clsx"
 
 enum PlayMode {
     LOOP,
@@ -78,7 +79,7 @@ const ControlBar = (props: ControlBarAttr) => {
     if (!song) return null
 
     return (
-        <div className={`fixed bottom-0 w-full h-[100px] backdrop-blur-2xl bg-black/20 text-white flex items-center justify-center shadow-[0_-2px_5px_rgba(0,0,0,0.1)] ${showPlayer ? '' : 'hidden'}`}>
+        <div className={`fixed bottom-0 w-full h-[100px] backdrop-blur-3xl bg-black/20 text-white flex items-center justify-center shadow-[0_-2px_5px_rgba(0,0,0,0.1)] ${showPlayer ? '' : 'hidden'}`}>
             <div onClick={_ => setOpenSongPage(true)}>
                 {
                     song ? <img alt='cover' className='w-20 h-20 object-cover rounded-[5px] shadow-[5px_10px_10px_rgba(0,0,0,0.2)] transition-transform duration-500 hover:scale-105 cursor-pointer' src={url + "/play/getCover/" + song.cover}></img> : <MusicalNoteIcon className="size-10 fill-white/60" />
@@ -143,7 +144,10 @@ const ControlBar = (props: ControlBarAttr) => {
                             pause()
                         }
                     }}
-                    className="inline-flex items-center gap-2 rounded-md py-1.5 px-3 text-sm/6 font-semibold text-white focus:outline-none data-[hover]:bg-maincolor data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white">
+                    className={clsx(
+                        "inline-flex items-center gap-2 rounded-md py-1.5 px-3 text-sm/6 font-semibold text-white transition-all duration-300",
+                        "focus:outline-none data-[hover]:bg-maincolor data-[open]:bg-gray-700 data-[focus]:outline-1 data-[focus]:outline-white"
+                    )}>
                     X
                 </Button>
             </div>

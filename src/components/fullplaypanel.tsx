@@ -63,7 +63,7 @@ const FullScreenPanel = ({
                     </div>
                     <div className="flex w-full items-center justify-center h-full">
                         <div className="max-w-[50vw] flex-1 flex flex-col gap-8 items-center justify-center">
-                            <Image alt='cover' className='max-w-[60%] aspect-square object-cover rounded-2xl shadow-[5px_10px_10px_rgba(0,0,0,0.2)] transition-transform duration-500 hover:scale-[1.02]' src={url + "/play/getCover/" + song?.cover}></Image>
+                            <img alt='cover' className='max-w-[60%] aspect-square object-cover rounded-2xl shadow-[5px_10px_10px_rgba(0,0,0,0.2)] transition-transform duration-500 hover:scale-[1.02]' src={url + "/play/getCover/" + song?.cover}></img>
                             <div className="flex flex-col w-[60%] gap-4">
                                 <div className="flex items-center justify-between w-full">
                                     <div className="w-[60%]">
